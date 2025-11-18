@@ -5,19 +5,22 @@ import { Sounds, playSound } from './sound'
 import { Hand } from './types'
 
 export const MINIMUM_BET = 1
-const STARTING_BANK = 20
+const DEFAULT_STARTING_BANK = 20
 const NUMBER_OF_DECKS = 6
 /** Reshuffle once less than 25% of the cards are left */
 const SHUFFLE_THRESHOLD = 0.25
-const INITIAL_PLAYERS: Player[] = [
-  { isDealer: false, bank: STARTING_BANK, hands: [new Hand()] },
-  { isDealer: true, bank: 0, hands: [new Hand()] },
-]
+
+function createInitialPlayers(startingBank: number = DEFAULT_STARTING_BANK): Player[] {
+  return [
+    { isDealer: false, bank: startingBank, hands: [new Hand()] },
+    { isDealer: true, bank: 0, hands: [new Hand()] },
+  ]
+}
 
 export const state = reactive<GameState>({
   shoe: generateShoe(NUMBER_OF_DECKS),
   cardsPlayed: 0,
-  players: INITIAL_PLAYERS,
+  players: createInitialPlayers(),
   activePlayer: null,
   activeHand: null,
   isDealing: true,
@@ -26,6 +29,7 @@ export const state = reactive<GameState>({
   isMuted: localStorage.getItem('isMuted') === 'true',
   soundLoadProgress: 0,
   insuranceOffered: false,
+  isLoadingBalance: true,
 })
 
 // Computed Properties
@@ -146,7 +150,18 @@ export const canSurrender = computed(() => {
 })
 
 export const resetBank = () => {
-  state.players.forEach((p) => (p.bank = STARTING_BANK))
+  state.players.forEach((p) => (p.bank = DEFAULT_STARTING_BANK))
+}
+
+/**
+ * Set the player's initial balance from the server
+ * @param balance - The balance to set
+ */
+export function setInitialBalance(balance: number) {
+  if (state.players[0]) {
+    state.players[0].bank = balance
+  }
+  state.isLoadingBalance = false
 }
 
 // Functions

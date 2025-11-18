@@ -115,3 +115,15 @@ export function getTelegramWebApp() {
     : null
 }
 
+/**
+ * Get Telegram user ID from the Web App
+ * @returns Telegram user ID or null if not available
+ */
+export function getTelegramUserId(): number | null {
+  const tg = getTelegramWebApp()
+  if (tg?.initDataUnsafe?.user?.id) {
+    return tg.initDataUnsafe.user.id
+  }
+  return null
+}
+

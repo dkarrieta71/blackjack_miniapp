@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { state, dealer } from '@/store'
+import { state, dealer, setInitialBalance } from '@/store'
 import { computed, onMounted } from 'vue'
 import GameHand from '@/components/GameHand.vue'
 import SvgSprite from '@/components/SvgSprite.vue'
@@ -10,11 +10,34 @@ import TitleScreen from '@/components/TitleScreen.vue'
 import GameHeader from '@/components/GameHeader.vue'
 import PlayerBank from '@/components/PlayerBank.vue'
 import BetControls from '@/components/BetControls.vue'
+import { getTelegramUserId, getTelegramWebApp } from '@/telegram'
+import { getUserInfo } from '@/api'
 
 const player = computed(() => state.players[0])
 
-onMounted(() => {
+onMounted(async () => {
   initSound()
+
+  // Fetch user balance from server
+  const telegramId = getTelegramUserId()
+  const tg = getTelegramWebApp()
+  const initData = tg?.initData || undefined
+
+  console.log(telegramId, initData);
+
+  if (telegramId) {
+    try {
+      const userInfo = await getUserInfo(telegramId, initData)
+      setInitialBalance(userInfo.balance)
+    } catch (error) {
+      console.error('Failed to load balance:', error)
+      // Use default balance if fetch fails
+      setInitialBalance(20)
+    }
+  } else {
+    // Not in Telegram, use default balance
+    setInitialBalance(20)
+  }
 })
 
 function onClickCapture(e: MouseEvent) {

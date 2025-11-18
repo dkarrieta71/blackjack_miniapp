@@ -41,6 +41,8 @@ export type GameState = {
   soundLoadProgress: number
   /** Whether insurance is currently being offered */
   insuranceOffered: boolean
+  /** Whether the balance is currently being loaded from the server */
+  isLoadingBalance: boolean
 }
 
 export class Hand {

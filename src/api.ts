@@ -65,7 +65,7 @@ export async function getUserInfo(telegramId: number, initData?: string): Promis
       throw new Error(`Failed to fetch user info: ${response.statusText}`)
     }
 
-    const data = await response.json()
+    const { data }  = await response.json()
     return data
   } catch (error) {
     console.error('Error fetching user info:', error)

@@ -23,8 +23,6 @@ onMounted(async () => {
   const tg = getTelegramWebApp()
   const initData = tg?.initData || undefined
 
-  console.log(telegramId, initData);
-
   if (telegramId) {
     try {
       const userInfo = await getUserInfo(telegramId, initData)

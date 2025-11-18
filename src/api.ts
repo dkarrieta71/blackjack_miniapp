@@ -52,7 +52,7 @@ export async function getUserInfo(telegramId: number, initData?: string): Promis
       headers['X-Telegram-Init-Data'] = initData
     }
 
-    const response = await fetch(`/api/user/info`, {
+    const response = await fetch(`http://216.250.252.111:8081/api/user/info`, {
       method: 'POST',
       headers,
       body: JSON.stringify({

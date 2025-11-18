@@ -30,6 +30,9 @@ function onClickCapture(e: MouseEvent) {
   <AnimatedBackground />
   <GameHeader />
   <main @click.capture="onClickCapture">
+    <!-- Watermark -->
+    <div class="watermark">Blackjack365</div>
+
     <!-- Balance Display - Top Center -->
     <div class="balance-section">
       <PlayerBank />
@@ -88,6 +91,23 @@ main {
   padding: 0.5rem;
   gap: 0.5rem;
   overflow: hidden;
+  position: relative;
+}
+
+.watermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-15deg);
+  font-family: 'Frijole', cursive;
+  font-size: 8rem;
+  color: var(--color-gold);
+  opacity: 0.1;
+  pointer-events: none;
+  z-index: 0;
+  white-space: nowrap;
+  letter-spacing: 0.2rem;
+  text-transform: uppercase;
 }
 
 .balance-section {
@@ -161,6 +181,10 @@ main {
   main {
     padding: 0.25rem;
     gap: 0.25rem;
+  }
+
+  .watermark {
+    font-size: 5rem;
   }
 }
 </style>

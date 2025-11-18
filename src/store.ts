@@ -1,5 +1,5 @@
-import { generateShoe, shuffle } from '@/cards'
-import type { GameState, HandResult, Player, Card } from './types'
+import { generateShoe, shuffle, CardValue } from '@/cards'
+import type { GameState, HandResult, Player, Card, CardRank } from './types'
 import { computed, nextTick, reactive } from 'vue'
 import { Sounds, playSound } from './sound'
 import { Hand } from './types'
@@ -43,13 +43,73 @@ const nextPlayer = computed(() => {
   return state.players[state.players.indexOf(state.activePlayer) + 1]
 })
 
+/** Check if bet is placed and cards are dealt */
+export const canPlayActions = computed(() => {
+  const playerHand = state.players[0].hands[0]
+  // Must have placed a bet
+  if (playerHand.bet === 0) return false
+  // Must have cards dealt (at least 2 cards for player and dealer)
+  if (playerHand.cards.length === 0) return false
+  if (dealer.value.hands[0].cards.length === 0) return false
+  return true
+})
+
+/** Check if a hand is a soft hand (has an Ace that can be counted as 11) */
+function isSoftHand(hand: Hand): boolean {
+  if (hand.cards.length !== 2) return false
+  const hasAce = hand.cards.some(card => card.rank === 'A')
+  if (!hasAce) return false
+  // If both cards are Aces, it's not a soft hand (it's a pair)
+  const aceCount = hand.cards.filter(card => card.rank === 'A').length
+  if (aceCount === 2) return false
+  // Check if Ace can be counted as 11 without busting
+  // With 2 cards and one Ace, if the other card is 2-10, Ace can be 11
+  const otherCard = hand.cards.find(card => card.rank !== 'A')
+  if (!otherCard) return false
+  const otherValue = CardValue[otherCard.rank as CardRank]
+  // Ace as 11 + other card value should be <= 21
+  return 11 + otherValue <= 21
+}
+
 export const canDoubleDown = computed(() => {
+  if (!canPlayActions.value) return false
   if (state.isDealing) return false
-  if ((state.activePlayer?.bank ?? 0) < (state.activeHand?.bet ?? 0)) return false
-  return state.activeHand?.cards.length === 2 && state.activePlayer?.hands.length === 1
+  if (!state.activeHand || !state.activePlayer) return false
+  if (state.activePlayer.isDealer) return false
+  if ((state.activePlayer.bank ?? 0) < (state.activeHand.bet ?? 0)) return false
+
+  // Must have exactly 2 cards (cannot double after hitting)
+  if (state.activeHand.cards.length !== 2) return false
+
+  // Must be first hand only (cannot double on split hands)
+  if (state.activePlayer.hands.length > 1) return false
+
+  const hand = state.activeHand
+  const total = hand.total
+  const isSoft = isSoftHand(hand)
+
+  // Can double on 10 or 11 (any combination)
+  if (total === 10 || total === 11) return true
+
+  // Can double on soft hands (Ace + number)
+  if (isSoft) return true
+
+  // Can double on hard 9 if dealer shows 3-6
+  // Hard 9 means total is 9 and it's not a soft hand
+  if (total === 9 && !isSoft) {
+    const dealerUpCard = dealer.value.hands[0].cards[1] // Dealer's visible card (second card)
+    if (dealerUpCard) {
+      const dealerValue = CardValue[dealerUpCard.rank as CardRank]
+      // Dealer shows 3, 4, 5, or 6
+      if (dealerValue >= 3 && dealerValue <= 6) return true
+    }
+  }
+
+  return false
 })
 
 export const canSplit = computed(() => {
+  if (!canPlayActions.value) return false
   if (state.isDealing) return false
   if ((state.activePlayer?.bank ?? 0) < (state.activeHand?.bet ?? 0)) return false
   return (
@@ -60,6 +120,7 @@ export const canSplit = computed(() => {
 })
 
 export const canTakeInsurance = computed(() => {
+  if (!canPlayActions.value) return false
   if (!state.insuranceOffered) return false
   if (state.isDealing) return false
   const playerHand = state.players[0].hands[0]
@@ -71,6 +132,7 @@ export const canTakeInsurance = computed(() => {
 })
 
 export const canSurrender = computed(() => {
+  if (!canPlayActions.value) return false
   if (state.isDealing) return false
   if (state.insuranceOffered) return false // Can't surrender during insurance offer
   if (!state.activeHand) return false

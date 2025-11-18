@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { canDoubleDown, canSplit, canTakeInsurance, canSurrender, state, doubleDown, endHand, hit, split, takeInsurance, declineInsurance, surrender } from '@/store'
+import { canDoubleDown, canSplit, canTakeInsurance, canSurrender, canPlayActions, state, doubleDown, endHand, hit, split, takeInsurance, declineInsurance, surrender } from '@/store'
 </script>
 
 <template>
@@ -7,12 +7,12 @@ import { canDoubleDown, canSplit, canTakeInsurance, canSurrender, state, doubleD
     <!-- Insurance options when dealer shows Ace -->
     <template v-if="state.insuranceOffered">
       <button :disabled="!canTakeInsurance" @click="takeInsurance" class="action-btn">Insurance</button>
-      <button :disabled="state.isDealing" @click="declineInsurance" class="action-btn">No Insurance</button>
+      <button :disabled="!canPlayActions || state.isDealing" @click="declineInsurance" class="action-btn">No Insurance</button>
     </template>
     <!-- Regular game actions -->
     <template v-else>
-      <button :disabled="state.isDealing" @click="hit" class="action-btn">Hit</button>
-      <button :disabled="state.isDealing" @click="endHand" class="action-btn">Stand</button>
+      <button :disabled="!canPlayActions || state.isDealing" @click="hit" class="action-btn">Hit</button>
+      <button :disabled="!canPlayActions || state.isDealing" @click="endHand" class="action-btn">Stand</button>
       <button :disabled="!canDoubleDown" @click="doubleDown" class="action-btn">Double</button>
       <button :disabled="!canSplit" @click="split" class="action-btn">Split</button>
       <button :disabled="!canSurrender" @click="surrender" class="action-btn surrender-btn">Surrender</button>

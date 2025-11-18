@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { playRound, state, resetBank } from '@/store'
+import { playRound, state } from '@/store'
 import { ref } from 'vue'
 
 const showTitleScreen = ref(true)
 
 function startGame() {
   showTitleScreen.value = false
-  resetBank()
+  // resetBank()
   state.isGameOver = false
 }
 </script>

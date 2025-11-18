@@ -24,7 +24,7 @@ export async function getUserInfo(telegramId: number, initData?: string): Promis
       headers['X-Telegram-Init-Data'] = initData
     }
 
-    const response = await fetch(`${API_BASE_URL}/api/user/info`, {
+    const response = await fetch(`/api/user/info`, {
       method: 'POST',
       headers,
       body: JSON.stringify({

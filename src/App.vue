@@ -28,7 +28,7 @@ onMounted(async () => {
   if (telegramId) {
     try {
       const userInfo = await getUserInfo(telegramId, initData)
-      setInitialBalance(userInfo.balance)
+      setInitialBalance(userInfo.balance.creditBalance)
     } catch (error) {
       console.error('Failed to load balance:', error)
       // Use default balance if fetch fails

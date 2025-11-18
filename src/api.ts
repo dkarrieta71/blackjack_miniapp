@@ -1,6 +1,5 @@
 // API service for backend communication
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.example.com'
+// Note: Using relative URL /api/user/info which will be proxied by Vite or handled by the server
 
 export interface UserBalance {
   creditBalance: number;
@@ -69,8 +68,8 @@ export async function getUserInfo(telegramId: number, initData?: string): Promis
     return data
   } catch (error) {
     console.error('Error fetching user info:', error)
-    // Return default balance if API fails
-    return null as unknown as UserInfo;
+    // Throw error so caller can handle it appropriately
+    throw error
   }
 }
 

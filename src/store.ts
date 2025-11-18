@@ -5,12 +5,12 @@ import { Sounds, playSound } from './sound'
 import { Hand } from './types'
 
 export const MINIMUM_BET = 1
-const DEFAULT_STARTING_BANK = 20
+export const DEFAULT_STARTING_BANK = 20
 const NUMBER_OF_DECKS = 6
 /** Reshuffle once less than 25% of the cards are left */
 const SHUFFLE_THRESHOLD = 0.25
 
-function createInitialPlayers(startingBank: number = DEFAULT_STARTING_BANK): Player[] {
+function createInitialPlayers(startingBank: number = 0): Player[] {
   return [
     { isDealer: false, bank: startingBank, hands: [new Hand()] },
     { isDealer: true, bank: 0, hands: [new Hand()] },
@@ -20,7 +20,7 @@ function createInitialPlayers(startingBank: number = DEFAULT_STARTING_BANK): Pla
 export const state = reactive<GameState>({
   shoe: generateShoe(NUMBER_OF_DECKS),
   cardsPlayed: 0,
-  players: createInitialPlayers(),
+  players: createInitialPlayers(0), // Start with 0, will be updated from API
   activePlayer: null,
   activeHand: null,
   isDealing: true,

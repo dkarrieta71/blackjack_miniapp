@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { state, dealer, setInitialBalance } from '@/store'
+import { state, dealer, setInitialBalance, DEFAULT_STARTING_BANK } from '@/store'
 import { computed, onMounted } from 'vue'
 import GameHand from '@/components/GameHand.vue'
 import SvgSprite from '@/components/SvgSprite.vue'
@@ -26,15 +26,20 @@ onMounted(async () => {
   if (telegramId) {
     try {
       const userInfo = await getUserInfo(telegramId, initData)
-      setInitialBalance(userInfo.balance.creditBalance)
+      if (userInfo && userInfo.balance && typeof userInfo.balance.creditBalance === 'number') {
+        setInitialBalance(userInfo.balance.creditBalance)
+      } else {
+        console.warn('Invalid user info received, using default balance')
+        setInitialBalance(DEFAULT_STARTING_BANK)
+      }
     } catch (error) {
       console.error('Failed to load balance:', error)
       // Use default balance if fetch fails
-      setInitialBalance(20)
+      setInitialBalance(DEFAULT_STARTING_BANK)
     }
   } else {
     // Not in Telegram, use default balance
-    setInitialBalance(20)
+    setInitialBalance(DEFAULT_STARTING_BANK)
   }
 })
 

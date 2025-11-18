@@ -30,9 +30,13 @@ function onClickCapture(e: MouseEvent) {
   <AnimatedBackground />
   <GameHeader />
   <main @click.capture="onClickCapture">
-    <!-- Top Section: Balance and Bet Controls -->
-    <div class="top-section">
+    <!-- Balance Display - Top Center -->
+    <div class="balance-section">
       <PlayerBank />
+    </div>
+
+    <!-- Top Section: Bet Controls -->
+    <div class="top-section">
       <BetControls />
     </div>
 
@@ -86,10 +90,19 @@ main {
   overflow: hidden;
 }
 
+.balance-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  flex-shrink: 0;
+  min-height: fit-content;
+}
+
 .top-section {
   display: flex;
   align-items: flex-start;
-  justify-content: space-between;
+  justify-content: center;
   gap: 0.5rem;
   padding: 0.5rem;
   flex-shrink: 0;

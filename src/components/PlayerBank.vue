@@ -28,24 +28,25 @@ watch(
 .bank-container {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  padding: 0.75rem 1rem;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
   background: rgba(0, 0, 0, 0.3);
   border-radius: 0.5rem;
-  min-width: 10rem;
+  min-width: fit-content;
 }
 
 .balance-label {
   color: var(--color-white);
-  font-size: 1rem;
+  font-size: 1.8rem;
   text-transform: uppercase;
   font-variation-settings: 'wght' 500;
-  letter-spacing: 0.05rem;
+  letter-spacing: 0.1rem;
 }
 
 .bank-amount {
   color: var(--color-gold);
-  font-size: 2rem;
+  font-size: 5.5rem;
   font-variation-settings: 'wght' 700;
   line-height: 1;
   transition: all 0.2s ease;
@@ -54,5 +55,19 @@ watch(
 .bank-container.is-increasing .bank-amount {
   transform: scale(1.1);
   color: #ffed4e;
+}
+
+@media (max-width: 768px) {
+  .bank-container {
+    padding: 0.75rem 1.5rem;
+  }
+
+  .balance-label {
+    font-size: 2rem;
+  }
+
+  .bank-amount {
+    font-size: 4rem;
+  }
 }
 </style>

@@ -25,6 +25,7 @@ export const state = reactive<GameState>({
   isGameOver: false,
   isMuted: localStorage.getItem('isMuted') === 'true',
   soundLoadProgress: 0,
+  insuranceOffered: false,
 })
 
 // Computed Properties
@@ -58,6 +59,30 @@ export const canSplit = computed(() => {
   )
 })
 
+export const canTakeInsurance = computed(() => {
+  if (!state.insuranceOffered) return false
+  if (state.isDealing) return false
+  const playerHand = state.players[0].hands[0]
+  if (playerHand.insurance > 0) return false // Already took insurance
+  if ((state.players[0].bank ?? 0) < Math.floor(playerHand.bet / 2)) return false // Can't afford insurance
+  // Check if dealer's up card (second card, index 1) is an Ace
+  const dealerUpCard = dealer.value.hands[0].cards[1]
+  return dealerUpCard?.rank === 'A'
+})
+
+export const canSurrender = computed(() => {
+  if (state.isDealing) return false
+  if (state.insuranceOffered) return false // Can't surrender during insurance offer
+  if (!state.activeHand) return false
+  if (!state.activePlayer || state.activePlayer.isDealer) return false
+  // Surrender only available on initial two cards, first hand only
+  if (state.activeHand.cards.length !== 2) return false
+  if (state.activePlayer.hands.length > 1) return false // Can't surrender split hands
+  if (state.activeHand.isBlackjack) return false // Can't surrender blackjack
+  if (state.activeHand.result) return false // Already has a result
+  return true
+})
+
 export const resetBank = () => {
   state.players.forEach((p) => (p.bank = STARTING_BANK))
 }
@@ -75,6 +100,7 @@ export async function playRound() {
   state.players.forEach((p) => (p.hands = [new Hand()]))
   state.showDealerHoleCard = false
   state.isDealing = false
+  state.insuranceOffered = false
   // Wait for user to place bet via BetControls component
 }
 
@@ -82,7 +108,16 @@ export async function playRound() {
 export async function startRound() {
   if (state.players[0].hands[0].bet === 0) return
   state.isDealing = true
+  state.insuranceOffered = false
   await dealRound()
+  // Check if dealer's up card is an Ace - offer insurance
+  const dealerUpCard = dealer.value.hands[0].cards[1]
+  if (dealerUpCard?.rank === 'A') {
+    state.insuranceOffered = true
+    state.isDealing = false
+    // Wait for player to decide on insurance or continue
+    return
+  }
   if (dealerHasBlackjack.value) return endRound()
   playTurn(state.players[0])
 }
@@ -154,6 +189,48 @@ export async function placeBet(player: Player, hand: Hand, amount: number) {
   hand.bet += amount
   playSound(Sounds.Bet)
   await sleep()
+}
+
+/** Take insurance when dealer shows an Ace. */
+export async function takeInsurance() {
+  if (!canTakeInsurance.value) return
+  const playerHand = state.players[0].hands[0]
+  const insuranceAmount = Math.floor(playerHand.bet / 2)
+  state.players[0].bank -= insuranceAmount
+  playerHand.insurance = insuranceAmount
+  playSound(Sounds.Bet)
+  await sleep()
+  // After insurance decision, check for dealer blackjack
+  state.insuranceOffered = false
+  await revealDealerHoleCard()
+  if (dealerHasBlackjack.value) return endRound()
+  playTurn(state.players[0])
+}
+
+/** Decline insurance and continue with the round. */
+export async function declineInsurance() {
+  if (!state.insuranceOffered) return
+  state.insuranceOffered = false
+  // Check for dealer blackjack after declining insurance
+  await revealDealerHoleCard()
+  if (dealerHasBlackjack.value) return endRound()
+  playTurn(state.players[0])
+}
+
+/** Surrender the hand - player gets back half of their bet and round ends. */
+export async function surrender() {
+  if (!canSurrender.value) return
+  if (!state.activeHand) return
+  state.isDealing = true
+  state.activeHand.result = 'surrender'
+  // Player gets back half of their bet
+  const halfBet = Math.floor(state.activeHand.bet / 2)
+  state.activeHand.bet = halfBet
+  await sleep()
+  playSound(Sounds.Lose)
+  await sleep(300)
+  // End the round immediately
+  endRound()
 }
 
 /** Start a player's turn by making them the active player and starting their first hand. */
@@ -333,10 +410,22 @@ async function settleBets() {
   for (const player of state.players) {
     if (player.isDealer) continue
     for (const hand of player.hands) {
+      // Handle insurance payouts first
+      if (hand.insurance > 0) {
+        if (dealerHasBlackjack.value) {
+          // Insurance pays even money (2x the insurance bet)
+          hand.insurance *= 2
+        } else {
+          // Insurance is lost
+          hand.insurance = 0
+        }
+      }
       // Blackjack is paid out immediately, so it is not handled here
+      // Surrender: bet is already set to half in surrender() function, so just collect it
       if (hand.result === 'win') hand.bet *= 2
       if (['lose', 'bust'].includes(hand.result!)) hand.bet = 0
-      total += hand.bet
+      // For surrender, bet is already half, so we don't modify it
+      total += hand.bet + hand.insurance
     }
   }
   playSound(total > 1 ? Sounds.ChipUp : Sounds.ChipDown)
@@ -347,10 +436,13 @@ async function settleBets() {
 async function collectWinnings() {
   for (const player of state.players) {
     if (player.isDealer) continue
-    const total = player.hands.reduce((acc: number, hand: Hand) => acc + hand.bet, 0)
+    const total = player.hands.reduce((acc: number, hand: Hand) => acc + hand.bet + hand.insurance, 0)
     player.bank += total
     if (total > 0) playSound(Sounds.Bank)
-    for (const hand of player.hands) hand.bet = 0
+    for (const hand of player.hands) {
+      hand.bet = 0
+      hand.insurance = 0
+    }
   }
   await sleep(300)
 }

@@ -85,6 +85,8 @@ async function placeBetHandler() {
   padding: 0.75rem;
   background: rgba(0, 0, 0, 0.3);
   border-radius: 0.75rem;
+  width: 80%;
+  margin: 0 auto;
 }
 
 .bet-input-group {
@@ -95,7 +97,7 @@ async function placeBetHandler() {
 
 .bet-input-group label {
   color: var(--color-white);
-  font-size: 1.2rem;
+  font-size: 2rem;
   text-transform: uppercase;
   font-variation-settings: 'wght' 500;
 }

@@ -2,7 +2,7 @@ import { CardSuits, CardValue } from '@/cards'
 
 export type CardSuit = (typeof CardSuits)[number]
 export type CardRank = keyof typeof CardValue
-export type HandResult = 'win' | 'lose' | 'push' | 'blackjack' | 'bust'
+export type HandResult = 'win' | 'lose' | 'push' | 'blackjack' | 'bust' | 'surrender'
 
 export type Card = {
   rank: CardRank
@@ -39,18 +39,22 @@ export type GameState = {
   isGameOver: boolean
   /** The download progress of the sound files */
   soundLoadProgress: number
+  /** Whether insurance is currently being offered */
+  insuranceOffered: boolean
 }
 
 export class Hand {
   id: number
   cards: Card[]
   bet: number
-  result?: 'win' | 'lose' | 'push' | 'bust' | 'blackjack'
+  result?: 'win' | 'lose' | 'push' | 'bust' | 'blackjack' | 'surrender'
+  insurance: number
 
   constructor(bet = 0) {
     this.id = new Date().getTime() + Math.random()
     this.cards = []
     this.bet = bet
+    this.insurance = 0
   }
 
   get total(): number {
@@ -79,5 +83,6 @@ export class Hand {
     this.cards = []
     this.bet = 0
     this.result = undefined
+    this.insurance = 0
   }
 }

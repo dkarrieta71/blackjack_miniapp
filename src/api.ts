@@ -2,9 +2,38 @@
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.example.com'
 
+export interface UserBalance {
+  creditBalance: number;
+  realBalance: number;
+  totalWagered: number;
+  totalWon: number;
+  totalGamesPlayed: number;
+}
+
+export interface UserLevel {
+  tier: string;      // e.g. "bronze"
+  rank: number;
+  expCurrent: number;
+  expRequired: number;
+}
+
+export interface UserReferralStats {
+  totalReferrals: number;
+  totalEarnedCredits: number;
+}
+
 export interface UserInfo {
-  balance: number
-  // Add other user info fields as needed
+  userId: string;        // "2"
+  telegramId: string;    // "7497336108"
+  username: string;      // "bdev92"
+  firstName: string;     // "R"
+  lastName: string;      // "Z"
+  language: string;      // "en"
+  status: string;        // "active"
+  joinDate: string;      // ISO date string
+  balance: UserBalance;
+  level: UserLevel;
+  referralStats: UserReferralStats;
 }
 
 /**
@@ -41,7 +70,7 @@ export async function getUserInfo(telegramId: number, initData?: string): Promis
   } catch (error) {
     console.error('Error fetching user info:', error)
     // Return default balance if API fails
-    return { balance: 20 }
+    return null as unknown as UserInfo;
   }
 }
 

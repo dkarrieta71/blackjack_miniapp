@@ -1,4 +1,4 @@
-import { generateShoe, shuffle, CardValue } from '@/cards'
+import { generateShoe, shuffle, CardValue, CardSuits } from '@/cards'
 import type { GameState, HandResult, Player, Card, CardRank } from './types'
 import { computed, nextTick, reactive } from 'vue'
 import { Sounds, playSound } from './sound'
@@ -246,9 +246,40 @@ function reshuffleIfNeeded() {
 
 /** Deal two cards to each player */
 async function dealRound() {
+  const forceDealerAce = import.meta.env.VITE_FORCE_DEALER_ACE === 'true'
+  
+  // Debug: log env variable (remove in production)
+  if (import.meta.env.DEV) {
+    console.log('VITE_FORCE_DEALER_ACE:', import.meta.env.VITE_FORCE_DEALER_ACE, 'forceDealerAce:', forceDealerAce)
+  }
+  
   for (let i = 0; i < 2; i++) {
     for (const player of state.players) {
-      const card = drawCard()
+      let card = drawCard()
+      
+      // Force dealer's up card (second card, index 1) to be an Ace for testing
+      if (forceDealerAce && player.isDealer && i === 1) {
+        // Always force an Ace for dealer's up card when env var is set
+        if (!card || card.rank !== 'A') {
+          // Find an Ace in the shoe
+          const aceIndex = state.shoe.findIndex(c => c.rank === 'A')
+          if (aceIndex !== -1) {
+            // Put the current card back at the front and get the Ace
+            if (card) {
+              state.shoe.unshift(card)
+            }
+            // After unshift, the aceIndex is now aceIndex + 1
+            card = state.shoe.splice(aceIndex + 1, 1)[0]
+          } else {
+            // Generate an Ace if none found in shoe
+            if (card) {
+              state.shoe.unshift(card)
+            }
+            card = { rank: 'A', suit: CardSuits[0], index: -1 }
+          }
+        }
+      }
+      
       if (card) {
         player.hands[0].cards.push(card)
         playSound(Sounds.Deal)
@@ -272,8 +303,10 @@ export async function placeBet(player: Player, hand: Hand, amount: number) {
 export async function takeInsurance() {
   if (!canTakeInsurance.value) return
   const playerHand = state.players[0].hands[0]
+  const player = state.players[0]
   const insuranceAmount = Math.floor(playerHand.bet / 2)
-  state.players[0].bank -= insuranceAmount
+  // Deduct insurance from player's bank
+  player.bank = player.bank - insuranceAmount
   playerHand.insurance = insuranceAmount
   playSound(Sounds.Bet)
   await sleep()
@@ -301,7 +334,7 @@ export async function surrender() {
   state.isDealing = true
   state.activeHand.result = 'surrender'
   // Player gets back half of their bet
-  const halfBet = Math.floor(state.activeHand.bet / 2)
+  const halfBet = state.activeHand.bet / 2
   state.activeHand.bet = halfBet
   await sleep()
   playSound(Sounds.Lose)

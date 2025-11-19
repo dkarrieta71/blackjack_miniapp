@@ -49,14 +49,18 @@ export class Hand {
   id: number
   cards: Card[]
   bet: number
+  originalBet: number  // Original bet amount before any modifications (doubling, etc.)
   result?: 'win' | 'lose' | 'push' | 'bust' | 'blackjack' | 'surrender'
   insurance: number
+  originalInsurance: number  // Original insurance bet amount (before payout)
 
   constructor(bet = 0) {
     this.id = new Date().getTime() + Math.random()
     this.cards = []
     this.bet = bet
+    this.originalBet = bet
     this.insurance = 0
+    this.originalInsurance = 0
   }
 
   get total(): number {
@@ -84,7 +88,9 @@ export class Hand {
   reset() {
     this.cards = []
     this.bet = 0
+    this.originalBet = 0
     this.result = undefined
     this.insurance = 0
+    this.originalInsurance = 0
   }
 }

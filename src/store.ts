@@ -3,6 +3,8 @@ import type { GameState, HandResult, Player, Card, CardRank } from './types'
 import { computed, nextTick, reactive } from 'vue'
 import { Sounds, playSound } from './sound'
 import { Hand } from './types'
+import { updateBalanceOnBet, recordGameResult, type GameResult, type HandResult as ApiHandResult } from './api'
+import { getTelegramUserId, getTelegramWebApp } from './telegram'
 
 export const MINIMUM_BET = 1
 export const DEFAULT_STARTING_BANK = 20
@@ -247,16 +249,16 @@ function reshuffleIfNeeded() {
 /** Deal two cards to each player */
 async function dealRound() {
   const forceDealerAce = import.meta.env.VITE_FORCE_DEALER_ACE === 'true'
-  
+
   // Debug: log env variable (remove in production)
   if (import.meta.env.DEV) {
     console.log('VITE_FORCE_DEALER_ACE:', import.meta.env.VITE_FORCE_DEALER_ACE, 'forceDealerAce:', forceDealerAce)
   }
-  
+
   for (let i = 0; i < 2; i++) {
     for (const player of state.players) {
       let card = drawCard()
-      
+
       // Force dealer's up card (second card, index 1) to be an Ace for testing
       if (forceDealerAce && player.isDealer && i === 1) {
         // Always force an Ace for dealer's up card when env var is set
@@ -279,7 +281,7 @@ async function dealRound() {
           }
         }
       }
-      
+
       if (card) {
         player.hands[0].cards.push(card)
         playSound(Sounds.Deal)
@@ -295,8 +297,25 @@ export async function placeBet(player: Player, hand: Hand, amount: number) {
   await nextTick()
   player.bank -= amount
   hand.bet += amount
+  // Track original bet amount (only set on initial bet, not on doubles)
+  if (hand.originalBet === 0) {
+    hand.originalBet = amount
+  } else {
+    // For doubles/splits, originalBet is the initial bet, don't change it
+    hand.originalBet = hand.originalBet
+  }
   playSound(Sounds.Bet)
   await sleep()
+
+  // Update balance on backend
+  const telegramId = getTelegramUserId()
+  const tg = getTelegramWebApp()
+  const initData = tg?.initData || undefined
+  if (telegramId) {
+    updateBalanceOnBet(telegramId, amount, player.bank, initData).catch(err => {
+      console.error('Failed to update balance on bet:', err)
+    })
+  }
 }
 
 /** Take insurance when dealer shows an Ace. */
@@ -308,6 +327,7 @@ export async function takeInsurance() {
   // Deduct insurance from player's bank
   player.bank = player.bank - insuranceAmount
   playerHand.insurance = insuranceAmount
+  playerHand.originalInsurance = insuranceAmount
   playSound(Sounds.Bet)
   await sleep()
   // After insurance decision, check for dealer blackjack
@@ -437,7 +457,11 @@ export async function split(): Promise<void> {
   if (!canSplit.value) return
   state.isDealing = true
   const bet = state.activeHand!.bet
+  const originalBet = state.activeHand!.originalBet
   const splitHands = [new Hand(bet), new Hand(0)]
+  // Preserve original bet for both split hands
+  splitHands[0].originalBet = originalBet
+  splitHands[1].originalBet = originalBet
   splitHands[0].cards = state.activeHand!.cards.slice(0, 1)
   splitHands[1].cards = state.activeHand!.cards.slice(1)
   state.activeHand = null
@@ -546,9 +570,52 @@ async function settleBets() {
 async function collectWinnings() {
   for (const player of state.players) {
     if (player.isDealer) continue
+
+    // Calculate game results before resetting hands
+    const apiHands: ApiHandResult[] = []
+    let totalBet = 0
+    let totalPayout = 0
+
+    for (const hand of player.hands) {
+      // Calculate payout: final amount - original bet - insurance
+      // Note: hand.bet and hand.insurance are already settled (wins doubled, losses zeroed)
+      const finalPayout = hand.bet + hand.insurance
+      const originalBetAmount = hand.originalBet || 0
+      const insuranceAmount = hand.originalInsurance || 0
+      const payout = finalPayout - originalBetAmount - insuranceAmount
+
+      apiHands.push({
+        bet: originalBetAmount,
+        insurance: insuranceAmount > 0 ? insuranceAmount : undefined,
+        result: hand.result || 'lose',
+        payout: payout,
+      })
+
+      totalBet += originalBetAmount + insuranceAmount
+      totalPayout += payout
+    }
+
     const total = player.hands.reduce((acc: number, hand: Hand) => acc + hand.bet + hand.insurance, 0)
     player.bank += total
     if (total > 0) playSound(Sounds.Bank)
+
+    // Record game result on backend
+    const telegramId = getTelegramUserId()
+    const tg = getTelegramWebApp()
+    const initData = tg?.initData || undefined
+    if (telegramId && apiHands.length > 0) {
+      const gameResult: GameResult = {
+        hands: apiHands,
+        totalBet: totalBet,
+        totalPayout: totalPayout,
+        newBalance: player.bank,
+      }
+      recordGameResult(telegramId, gameResult, initData).catch(err => {
+        console.error('Failed to record game result:', err)
+      })
+    }
+
+    // Reset hands after recording
     for (const hand of player.hands) {
       hand.bet = 0
       hand.insurance = 0

@@ -126,7 +126,7 @@ export async function updateBalanceOnBet(
       headers['X-Telegram-Init-Data'] = initData
     }
 
-    const response = await fetch(`${API_BASE_URL}/api/game/bet`, {
+    const response = await fetch(`${API_BASE_URL}/api/game/update-balance-on-bet`, {
       method: 'POST',
       headers,
       body: JSON.stringify({

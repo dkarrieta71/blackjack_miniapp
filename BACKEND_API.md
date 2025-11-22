@@ -20,7 +20,7 @@ All endpoints should verify the Telegram Web App authentication using the `X-Tel
 
 ## 1. Update Balance on Bet
 
-**Endpoint:** `POST /api/game/bet`
+**Endpoint:** `POST /api/game/update-balance-on-bet`
 
 **Description:** Called when a player places a bet. This updates the player's balance by deducting the bet amount.
 

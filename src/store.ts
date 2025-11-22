@@ -3,7 +3,7 @@ import type { GameState, HandResult, Player, Card, CardRank } from './types'
 import { computed, nextTick, reactive } from 'vue'
 import { Sounds, playSound } from './sound'
 import { Hand } from './types'
-import { updateBalanceOnBet, recordGameResult, type GameResult, type HandResult as ApiHandResult } from './api'
+import { updateBalanceOnBet, recordGameResult, syncMatch, type GameResult, type HandResult as ApiHandResult, type MatchSyncRequest } from './api'
 import { getTelegramUserId, getTelegramWebApp } from './telegram'
 
 export const MINIMUM_BET = 1
@@ -32,6 +32,8 @@ export const state = reactive<GameState>({
   soundLoadProgress: 0,
   insuranceOffered: false,
   isLoadingBalance: true,
+  matchBets: [],
+  usedCredits: true, // Default to credits, will be updated based on balance type
 })
 
 // Computed Properties
@@ -180,6 +182,7 @@ export async function playRound() {
   state.showDealerHoleCard = false
   state.isDealing = false
   state.insuranceOffered = false
+  state.matchBets = [] // Reset match bets for new round
   // Wait for user to place bet via BetControls component
 }
 
@@ -352,6 +355,8 @@ export async function surrender() {
   if (!canSurrender.value) return
   if (!state.activeHand) return
   state.isDealing = true
+  const handValue = state.activeHand.total
+  trackMatchBet('surrender', handValue)
   state.activeHand.result = 'surrender'
   // Player gets back half of their bet
   const halfBet = state.activeHand.bet / 2
@@ -386,6 +391,9 @@ async function playHand(hand: Hand): Promise<void> {
 /** Check if the player has blackjack. If so, award the player and end the hand. */
 async function checkForBlackjack(hand: Hand): Promise<boolean> {
   if (hand.isBlackjack) {
+    if (!state.activePlayer?.isDealer) {
+      trackMatchBet('blackjack', hand.total)
+    }
     hand.result = 'blackjack'
     await sleep(100)
     playSound(Sounds.BlackjackBoom)
@@ -415,10 +423,19 @@ async function playDealerHand(hand: Hand) {
   endRound()
 }
 
+/** Track a match bet action */
+function trackMatchBet(action: string, handValue: number) {
+  if (!state.activePlayer?.isDealer && state.activeHand) {
+    state.matchBets.push({ action, handValue })
+  }
+}
+
 /** Deal one more card to the active hand, and check for 21 or a bust. */
 export async function hit() {
   state.isDealing = true
+  const handValue = state.activeHand!.total
   state.activeHand!.cards.push(drawCard()!)
+  trackMatchBet('hit', handValue)
   playSound(Sounds.Deal)
   if (await checkForTwentyOne(state.activeHand!)) return
   if (await checkForBust(state.activeHand!)) return
@@ -440,7 +457,10 @@ async function checkForTwentyOne(hand: Hand): Promise<boolean> {
 /** Check if the player has busted.  If so, end the hand. */
 async function checkForBust(hand: Hand): Promise<boolean> {
   if (hand.isBust) {
-    if (!state.activePlayer?.isDealer) playSound(Sounds.BadHit)
+    if (!state.activePlayer?.isDealer) {
+      trackMatchBet('bust', hand.total)
+      playSound(Sounds.BadHit)
+    }
     await sleep()
     state.activeHand = null
     await sleep(300)
@@ -456,6 +476,8 @@ async function checkForBust(hand: Hand): Promise<boolean> {
 export async function split(): Promise<void> {
   if (!canSplit.value) return
   state.isDealing = true
+  const handValue = state.activeHand!.total
+  trackMatchBet('split', handValue)
   const bet = state.activeHand!.bet
   const originalBet = state.activeHand!.originalBet
   const splitHands = [new Hand(bet), new Hand(0)]
@@ -474,6 +496,8 @@ export async function split(): Promise<void> {
 /** Double the bet for the active hand, and hit only once. */
 export async function doubleDown(): Promise<void> {
   if (!canDoubleDown.value) return
+  const handValue = state.activeHand!.total
+  trackMatchBet('double', handValue)
   await placeBet(state.activePlayer!, state.activeHand!, state.activeHand!.bet)
   await hit()
   endHand()
@@ -481,6 +505,11 @@ export async function doubleDown(): Promise<void> {
 
 /** Advance to the next hand or player. */
 export async function endHand() {
+  // Track "stand" action when player ends their hand (not dealer, no result set yet)
+  // Results are set for: blackjack, bust, surrender - these are tracked separately
+  if (state.activeHand && !state.activePlayer?.isDealer && !state.activeHand.result) {
+    trackMatchBet('stand', state.activeHand.total)
+  }
   const isSplit = state.activePlayer && state.activePlayer.hands.length > 1
   if (isSplit && state.activePlayer?.hands[1].cards.length === 1) {
     return playHand(state.activePlayer?.hands[1])
@@ -612,6 +641,54 @@ async function collectWinnings() {
       }
       recordGameResult(telegramId, gameResult, initData).catch(err => {
         console.error('Failed to record game result:', err)
+      })
+
+      // Sync match data to backend
+      // Determine overall match result
+      let matchResult: string | null = null
+      let winAmount: number | null = null
+
+      // Check for special results first (blackjack, bust, surrender)
+      const hasBlackjack = apiHands.some(h => h.result === 'blackjack')
+      const hasBust = apiHands.some(h => h.result === 'bust')
+      const hasSurrender = apiHands.some(h => h.result === 'surrender')
+
+      if (hasBlackjack) {
+        matchResult = 'Blackjack'
+      } else if (hasBust) {
+        matchResult = 'Bust'
+      } else if (hasSurrender) {
+        matchResult = 'Surrender'
+      } else if (totalPayout > 0) {
+        matchResult = 'Win'
+      } else if (totalPayout < 0) {
+        matchResult = 'Loss'
+      } else {
+        matchResult = 'Push'
+      }
+
+      // Calculate win amount (null if lost or pushed)
+      if (totalPayout > 0) {
+        winAmount = totalPayout
+      } else {
+        winAmount = null
+      }
+
+      const matchData: MatchSyncRequest = {
+        telegramId: telegramId,
+        gameType: 'blackjack',
+        usedCredits: state.usedCredits,
+        betAmount: totalBet,
+        winAmount: winAmount,
+        result: matchResult,
+        matchBets: state.matchBets.length > 0 ? state.matchBets.map(bet => ({
+          action: bet.action,
+          handValue: bet.handValue,
+        })) : undefined,
+      }
+
+      syncMatch(matchData, initData).catch(err => {
+        console.error('Failed to sync match:', err)
       })
     }
 

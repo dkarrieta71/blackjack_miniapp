@@ -51,6 +51,21 @@ export interface GameResult {
   newBalance: number;    // Player's balance after the game
 }
 
+export interface MatchBet {
+  action: string;        // e.g., "hit", "stand", "double", "split", "surrender"
+  handValue: number;     // The hand value at the time of this action
+}
+
+export interface MatchSyncRequest {
+  telegramId: number | string;
+  gameType: string;      // e.g., "blackjack"
+  usedCredits: boolean;  // Whether the player used bonus credits (true) or real funds (false)
+  betAmount: number;     // Total amount bet in this match (must be positive)
+  winAmount?: number | null;  // Amount won (null if player lost)
+  result?: string | null;    // Match result: "Win", "Loss", "Push", "Bust", "Blackjack", "Surrender"
+  matchBets?: MatchBet[];    // Array of bet actions taken during the match
+}
+
 /**
  * Fetch user information from the backend
  * @param telegramId - Telegram user ID
@@ -164,6 +179,40 @@ export async function recordGameResult(
     }
   } catch (error) {
     console.error('Error recording game result:', error)
+    // Don't throw - allow game to continue even if API call fails
+  }
+}
+
+/**
+ * Sync match data when a game match is completed
+ * @param matchData - Match sync data including bets and results
+ * @param initData - Telegram Web App init data for authentication (optional)
+ */
+export async function syncMatch(
+  matchData: MatchSyncRequest,
+  initData?: string
+): Promise<void> {
+  try {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    }
+
+    if (initData) {
+      headers['X-Telegram-Init-Data'] = initData
+    }
+
+    const response = await fetch(`${API_BASE_URL}/api/match/sync`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(matchData),
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(`Failed to sync match: ${response.statusText} - ${errorData.error || ''}`)
+    }
+  } catch (error) {
+    console.error('Error syncing match:', error)
     // Don't throw - allow game to continue even if API call fails
   }
 }

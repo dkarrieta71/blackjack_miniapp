@@ -18,6 +18,11 @@ export type Player = {
   hands: Hand[]
 }
 
+export type MatchBet = {
+  action: string  // e.g., "hit", "stand", "double", "split", "surrender"
+  handValue: number  // The hand value at the time of this action
+}
+
 export type GameState = {
   /** The shoe of cards */
   shoe: Card[]
@@ -43,6 +48,10 @@ export type GameState = {
   insuranceOffered: boolean
   /** Whether the balance is currently being loaded from the server */
   isLoadingBalance: boolean
+  /** Match bets (actions) taken during the current match */
+  matchBets: MatchBet[]
+  /** Whether the player is using credits (true) or real funds (false) */
+  usedCredits: boolean
 }
 
 export class Hand {

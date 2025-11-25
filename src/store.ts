@@ -34,6 +34,7 @@ export const state = reactive<GameState>({
   isLoadingBalance: true,
   matchBets: [],
   usedCredits: localStorage.getItem('usedCredits') !== 'false', // Default to credits, use stored preference
+  hasGameStarted: false, // Track if user has clicked "Start Game" at least once
 })
 
 // Track both balances separately
@@ -203,6 +204,7 @@ export function toggleBalanceType() {
 
 /** Play a round of blackjack.  Reset hands, reshuffle, and wait for bet. */
 export async function playRound() {
+  state.hasGameStarted = true // Mark that game has started
   if (checkForGameOver()) return
   // Ensure shoe has cards - if empty, regenerate it
   if (state.shoe.length === 0) {

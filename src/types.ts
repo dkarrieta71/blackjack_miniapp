@@ -52,6 +52,8 @@ export type GameState = {
   matchBets: MatchBet[]
   /** Whether the player is using credits (true) or real funds (false) */
   usedCredits: boolean
+  /** Whether the game has started (user clicked "Start Game" at least once) */
+  hasGameStarted: boolean
 }
 
 export class Hand {

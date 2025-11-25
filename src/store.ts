@@ -178,10 +178,37 @@ export function setInitialBalances(creditBalance: number, realBalance: number) {
 
 /**
  * Update the player's bank based on the current usedCredits setting
+ * If the selected balance is 0, automatically switch to the other balance type
  */
 export function updatePlayerBank() {
   if (state.players[0]) {
-    state.players[0].bank = state.usedCredits ? balances.creditBalance : balances.realBalance
+    if (state.usedCredits) {
+      // Using Bonus Credits
+      if (balances.creditBalance > 0) {
+        state.players[0].bank = balances.creditBalance
+      } else if (balances.realBalance > 0) {
+        // Credit balance is 0, switch to Real Funds
+        state.usedCredits = false
+        localStorage.setItem('usedCredits', 'false')
+        state.players[0].bank = balances.realBalance
+      } else {
+        // Both are 0
+        state.players[0].bank = 0
+      }
+    } else {
+      // Using Real Funds
+      if (balances.realBalance > 0) {
+        state.players[0].bank = balances.realBalance
+      } else if (balances.creditBalance > 0) {
+        // Real balance is 0, switch to Bonus Credits
+        state.usedCredits = true
+        localStorage.setItem('usedCredits', 'true')
+        state.players[0].bank = balances.creditBalance
+      } else {
+        // Both are 0
+        state.players[0].bank = 0
+      }
+    }
   }
 }
 
@@ -197,7 +224,7 @@ export function toggleBalanceType() {
   }
   state.usedCredits = !state.usedCredits
   localStorage.setItem('usedCredits', state.usedCredits.toString())
-  updatePlayerBank()
+  updatePlayerBank() // Update the displayed bank to reflect the new balance type
 }
 
 // Functions

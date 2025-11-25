@@ -1,13 +1,17 @@
 <template>
-  <div role="status" class="bank-container" :class="{ 'is-increasing': isIncreasing }">
-    <div class="balance-label">BALANCE</div>
-    <div class="bank-amount">${{ state.players[0].bank.toFixed(2) }}</div>
+  <div class="bank-wrapper">
+    <div role="status" class="bank-container" :class="{ 'is-increasing': isIncreasing }">
+      <div class="balance-label">BALANCE</div>
+      <div class="bank-amount">${{ state.players[0].bank.toFixed(2) }}</div>
+    </div>
+    <BalanceToggle />
   </div>
 </template>
 
 <script lang="ts" setup>
 import { ref, watch } from 'vue'
 import { state } from '../store'
+import BalanceToggle from './BalanceToggle.vue'
 
 const isIncreasing = ref(false)
 
@@ -25,6 +29,13 @@ watch(
 </script>
 
 <style scoped>
+.bank-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .bank-container {
   display: flex;
   flex-direction: column;

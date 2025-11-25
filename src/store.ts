@@ -33,7 +33,13 @@ export const state = reactive<GameState>({
   insuranceOffered: false,
   isLoadingBalance: true,
   matchBets: [],
-  usedCredits: true, // Default to credits, will be updated based on balance type
+  usedCredits: localStorage.getItem('usedCredits') !== 'false', // Default to credits, use stored preference
+})
+
+// Track both balances separately
+export const balances = reactive({
+  creditBalance: 0,
+  realBalance: 0,
 })
 
 // Computed Properties
@@ -158,14 +164,39 @@ export const resetBank = () => {
 }
 
 /**
- * Set the player's initial balance from the server
- * @param balance - The balance to set
+ * Set the player's initial balances from the server
+ * @param creditBalance - The credit balance
+ * @param realBalance - The real balance
  */
-export function setInitialBalance(balance: number) {
-  if (state.players[0]) {
-    state.players[0].bank = balance
-  }
+export function setInitialBalances(creditBalance: number, realBalance: number) {
+  balances.creditBalance = creditBalance
+  balances.realBalance = realBalance
+  updatePlayerBank()
   state.isLoadingBalance = false
+}
+
+/**
+ * Update the player's bank based on the current usedCredits setting
+ */
+export function updatePlayerBank() {
+  if (state.players[0]) {
+    state.players[0].bank = state.usedCredits ? balances.creditBalance : balances.realBalance
+  }
+}
+
+/**
+ * Toggle between Bonus Credits and Real Funds
+ * Prevents toggling if there's an active bet or game in progress
+ */
+export function toggleBalanceType() {
+  // Don't allow toggling if there's an active bet or game in progress
+  const playerHand = state.players[0]?.hands[0]
+  if (playerHand && (playerHand.bet > 0 || playerHand.cards.length > 0)) {
+    return // Can't toggle during an active game
+  }
+  state.usedCredits = !state.usedCredits
+  localStorage.setItem('usedCredits', state.usedCredits.toString())
+  updatePlayerBank()
 }
 
 // Functions
@@ -299,6 +330,12 @@ export async function placeBet(player: Player, hand: Hand, amount: number) {
   state.isDealing = true
   await nextTick()
   player.bank -= amount
+  // Update the appropriate balance
+  if (state.usedCredits) {
+    balances.creditBalance -= amount
+  } else {
+    balances.realBalance -= amount
+  }
   hand.bet += amount
   // Track original bet amount (only set on initial bet, not on doubles)
   if (hand.originalBet === 0) {
@@ -329,6 +366,12 @@ export async function takeInsurance() {
   const insuranceAmount = Math.floor(playerHand.bet / 2)
   // Deduct insurance from player's bank
   player.bank = player.bank - insuranceAmount
+  // Update the appropriate balance
+  if (state.usedCredits) {
+    balances.creditBalance -= insuranceAmount
+  } else {
+    balances.realBalance -= insuranceAmount
+  }
   playerHand.insurance = insuranceAmount
   playerHand.originalInsurance = insuranceAmount
   playSound(Sounds.Bet)
@@ -626,6 +669,12 @@ async function collectWinnings() {
 
     const total = player.hands.reduce((acc: number, hand: Hand) => acc + hand.bet + hand.insurance, 0)
     player.bank += total
+    // Update the appropriate balance
+    if (state.usedCredits) {
+      balances.creditBalance += total
+    } else {
+      balances.realBalance += total
+    }
     if (total > 0) playSound(Sounds.Bank)
 
     // Record game result on backend

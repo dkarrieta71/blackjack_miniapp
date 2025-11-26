@@ -35,6 +35,7 @@ export interface UserInfo {
   balance: UserBalance;
   level: UserLevel;
   referralStats: UserReferralStats;
+  xp?: XPInfo;           // XP information (optional, may not be present in all responses)
 }
 
 export interface HandResult {
@@ -64,6 +65,43 @@ export interface MatchSyncRequest {
   winAmount?: number | null;  // Amount won (null if player lost)
   result?: string | null;    // Match result: "Win", "Loss", "Push", "Bust", "Blackjack", "Surrender"
   matchBets?: MatchBet[];    // Array of bet actions taken during the match
+}
+
+// XP System Types
+export interface XPLevel {
+  tier: string;          // e.g., "bronze", "silver", "gold"
+  rank: number;          // e.g., 1, 2, 3
+  expCurrent: number;    // Current XP in this level
+  expRequired: number;   // XP required for this level
+}
+
+export interface XPInfo {
+  totalXP: number;
+  redeemableXP: number;
+  bonusCreditsBalance: number;
+  redeemableBonusCredits: number;
+  playthroughProgress: number;
+  playthroughRequired: number;
+  playthroughPercentage: number;
+  isPlaythroughComplete: boolean;
+  currentLevel: XPLevel;
+  nextLevel: XPLevel;
+  xpUntilNextLevel: number;
+  progressPercentage: number;
+  playerRank: string;    // Formatted string like "Bronze 1"
+}
+
+export interface XPRedemptionRequest {
+  telegramId: number;
+  xpAmount: number;
+}
+
+export interface XPRedemptionResponse {
+  xpRedeemed: number;
+  bonusCreditsAwarded: number;
+  newRedeemableXP: number;
+  newBonusCredits: number;
+  playthroughRequired: number;
 }
 
 /**
@@ -214,6 +252,85 @@ export async function syncMatch(
   } catch (error) {
     console.error('Error syncing match:', error)
     // Don't throw - allow game to continue even if API call fails
+  }
+}
+
+/**
+ * Fetch XP information for a user
+ * @param telegramId - Telegram user ID
+ * @param initData - Telegram Web App init data for authentication (optional)
+ * @returns XP information including level, progress, and bonus credits
+ */
+export async function getXPInfo(telegramId: number, initData?: string): Promise<XPInfo> {
+  try {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    }
+
+    if (initData) {
+      headers['X-Telegram-Init-Data'] = initData
+    }
+
+    const response = await fetch(`${API_BASE_URL}/api/xp/info`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        telegramId,
+      }),
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch XP info: ${response.statusText}`)
+    }
+
+    const { data } = await response.json()
+    return data
+  } catch (error) {
+    console.error('Error fetching XP info:', error)
+    throw error
+  }
+}
+
+/**
+ * Redeem XP for bonus credits
+ * @param telegramId - Telegram user ID
+ * @param xpAmount - Amount of XP to redeem (minimum 50)
+ * @param initData - Telegram Web App init data for authentication (optional)
+ * @returns Redemption details
+ */
+export async function redeemXP(
+  telegramId: number,
+  xpAmount: number,
+  initData?: string
+): Promise<XPRedemptionResponse> {
+  try {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    }
+
+    if (initData) {
+      headers['X-Telegram-Init-Data'] = initData
+    }
+
+    const response = await fetch(`${API_BASE_URL}/api/xp/redeem`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        telegramId,
+        xpAmount,
+      }),
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(errorData.error || `Failed to redeem XP: ${response.statusText}`)
+    }
+
+    const { data } = await response.json()
+    return data
+  } catch (error) {
+    console.error('Error redeeming XP:', error)
+    throw error
   }
 }
 

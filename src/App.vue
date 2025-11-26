@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { state, dealer, setInitialBalances, DEFAULT_STARTING_BANK } from '@/store'
-import { computed, onMounted } from 'vue'
+import { state, dealer, setInitialBalances, DEFAULT_STARTING_BANK, refreshXPInfo, xpState } from '@/store'
+import { computed, onMounted, ref } from 'vue'
 import GameHand from '@/components/GameHand.vue'
 import SvgSprite from '@/components/SvgSprite.vue'
 import AnimatedBackground from '@/components/AnimatedBackground.vue'
@@ -10,10 +10,13 @@ import TitleScreen from '@/components/TitleScreen.vue'
 import GameHeader from '@/components/GameHeader.vue'
 import PlayerBank from '@/components/PlayerBank.vue'
 import BetControls from '@/components/BetControls.vue'
+import XPPanel from '@/components/XPPanel.vue'
+import XPProgressBar from '@/components/XPProgressBar.vue'
 import { getTelegramUserId, getTelegramWebApp } from '@/telegram'
 import { getUserInfo } from '@/api'
 
 const player = computed(() => state.players[0])
+const isXPPanelOpen = ref(false)
 
 onMounted(async () => {
   initSound()
@@ -33,6 +36,17 @@ onMounted(async () => {
       } else {
         console.warn('Invalid user info received, using default balance')
         setInitialBalances(DEFAULT_STARTING_BANK, DEFAULT_STARTING_BANK)
+      }
+
+      // Fetch XP info if available in userInfo, otherwise fetch separately
+      if (userInfo.xp) {
+        xpState.xpInfo = userInfo.xp
+        xpState.lastUpdated = Date.now()
+      } else {
+        // Fetch XP info separately
+        refreshXPInfo().catch(err => {
+          console.error('Failed to load XP info:', err)
+        })
       }
     } catch (error) {
       console.error('Failed to load balance:', error)
@@ -64,6 +78,29 @@ function onClickCapture(e: MouseEvent) {
     <!-- Balance Display - Top Center -->
     <div class="balance-section">
       <PlayerBank />
+      <button @click="isXPPanelOpen = true" class="xp-button" aria-label="Open XP Panel">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M12 2L2 7l10 5 10-5-10-5z" />
+          <path d="M2 17l10 5 10-5" />
+          <path d="M2 12l10 5 10-5" />
+        </svg>
+        <span v-if="xpState.xpInfo">{{ xpState.xpInfo.playerRank }}</span>
+      </button>
+    </div>
+
+    <!-- XP Progress Bar (compact view) -->
+    <div class="xp-section" v-if="xpState.xpInfo">
+      <XPProgressBar :xp-info="xpState.xpInfo" />
     </div>
 
     <!-- Top Section: Bet Controls -->
@@ -109,6 +146,7 @@ function onClickCapture(e: MouseEvent) {
     </section>
   </main>
   <TitleScreen />
+  <XPPanel v-model:is-open="isXPPanelOpen" />
 </template>
 
 <style scoped>
@@ -142,6 +180,36 @@ main {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 0.75rem;
+  padding: 0.5rem;
+  flex-shrink: 0;
+  min-height: fit-content;
+}
+
+.xp-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background: rgba(255, 217, 0, 0.2);
+  border: 1px solid rgba(255, 217, 0, 0.4);
+  border-radius: 0.5rem;
+  color: var(--color-gold);
+  font-size: 1.6rem;
+  font-variation-settings: 'wght' 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.xp-button:hover {
+  background: rgba(255, 217, 0, 0.3);
+  border-color: var(--color-gold);
+  transform: scale(1.05);
+}
+
+.xp-section {
   padding: 0.5rem;
   flex-shrink: 0;
   min-height: fit-content;

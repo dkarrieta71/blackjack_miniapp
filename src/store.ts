@@ -3,7 +3,8 @@ import type { GameState, HandResult, Player, Card, CardRank } from './types'
 import { computed, nextTick, reactive } from 'vue'
 import { Sounds, playSound } from './sound'
 import { Hand } from './types'
-import { updateBalanceOnBet, recordGameResult, syncMatch, type GameResult, type HandResult as ApiHandResult, type MatchSyncRequest } from './api'
+import { updateBalanceOnBet, recordGameResult, syncMatch, type GameResult, type HandResult as ApiHandResult, type MatchSyncRequest, getXPInfo } from './api'
+import type { XPInfo } from './api'
 import { getTelegramUserId, getTelegramWebApp } from './telegram'
 
 export const MINIMUM_BET = 1
@@ -41,6 +42,17 @@ export const state = reactive<GameState>({
 export const balances = reactive({
   creditBalance: 0,
   realBalance: 0,
+})
+
+// XP System state
+export const xpState = reactive<{
+  xpInfo: XPInfo | null
+  isLoading: boolean
+  lastUpdated: number | null
+}>({
+  xpInfo: null,
+  isLoading: false,
+  lastUpdated: null,
 })
 
 // Computed Properties
@@ -770,6 +782,11 @@ async function collectWinnings() {
       })
     }
 
+    // Refresh XP info after game result (XP is automatically awarded by backend)
+    refreshXPInfo(true).catch(err => {
+      console.error('Failed to refresh XP info:', err)
+    })
+
     // Reset hands after recording
     for (const hand of player.hands) {
       hand.bet = 0
@@ -793,4 +810,35 @@ async function resetHands() {
 /** Sleep for a given number of milliseconds. This paces the game and gives time for animations and sounds. */
 function sleep(ms: number = 900) {
   return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+/**
+ * Fetch and update XP information
+ * @param forceRefresh - Force refresh even if recently updated
+ */
+export async function refreshXPInfo(forceRefresh: boolean = false): Promise<void> {
+  const telegramId = getTelegramUserId()
+  const tg = getTelegramWebApp()
+  const initData = tg?.initData || undefined
+
+  if (!telegramId) {
+    return // Can't fetch XP without Telegram ID
+  }
+
+  // Don't refresh if recently updated (within last 2 seconds) unless forced
+  if (!forceRefresh && xpState.lastUpdated && Date.now() - xpState.lastUpdated < 2000) {
+    return
+  }
+
+  xpState.isLoading = true
+  try {
+    const xpInfo = await getXPInfo(telegramId, initData)
+    xpState.xpInfo = xpInfo
+    xpState.lastUpdated = Date.now()
+  } catch (error) {
+    console.error('Failed to fetch XP info:', error)
+    // Don't throw - allow game to continue even if XP fetch fails
+  } finally {
+    xpState.isLoading = false
+  }
 }

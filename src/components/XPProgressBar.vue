@@ -82,7 +82,7 @@ defineProps<{
 
 .xp-until-next {
   color: var(--color-off-white);
-  font-size: 1.4rem;
+  font-size: 2.0rem;
   text-align: center;
   opacity: 0.8;
   text-transform: capitalize;
@@ -98,7 +98,7 @@ defineProps<{
   }
 
   .xp-until-next {
-    font-size: 1.2rem;
+    font-size: 1.8rem;
   }
 }
 </style>

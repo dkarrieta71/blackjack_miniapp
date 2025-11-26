@@ -31,7 +31,7 @@ watch(
 <style scoped>
 .bank-wrapper {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   gap: 0.5rem;
 }

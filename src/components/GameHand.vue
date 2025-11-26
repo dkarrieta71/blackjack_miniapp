@@ -19,6 +19,16 @@ const isSplitHand = computed(
 
 const isDealer = computed(() => dealer.value.hands.includes(props.hand))
 
+const cardCount = computed(() => props.hand.cards.length)
+
+// Calculate scale factor based on number of cards to prevent overflow
+const cardScale = computed(() => {
+  if (cardCount.value <= 3) return 1
+  if (cardCount.value <= 5) return 0.85
+  if (cardCount.value <= 7) return 0.7
+  return 0.6
+})
+
 function isFaceDown(card: Card) {
   if (!isDealer.value) return false
   if (props.hand.cards.indexOf(card) !== 0) return false
@@ -32,9 +42,13 @@ function isSplitCard(card: Card) {
 </script>
 
 <template>
-  <article class="hand" :class="{ 'active-hand': isActiveHand, 'split-hand': isSplitHand }">
+  <article
+    class="hand"
+    :class="{ 'active-hand': isActiveHand, 'split-hand': isSplitHand, 'many-cards': cardCount > 3 }"
+    :style="{ '--card-scale': cardScale }"
+  >
     <h2 class="sr-only">{{ isDealer ? "Dealer's" : 'Your' }} hand</h2>
-    <transition-group name="deal">
+    <transition-group name="deal" class="cards-container">
       <PlayingCard
         v-for="card in hand.cards"
         :card="card"
@@ -67,12 +81,33 @@ function isSplitCard(card: Card) {
   width: fit-content;
   min-height: 11.2rem;
   min-width: 8rem;
-  max-width: 60vw;
+  max-width: 95%;
+  align-items: flex-start;
+  align-content: flex-start;
 }
+
+.cards-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25rem;
+  width: 100%;
+  transform: scale(var(--card-scale, 1));
+  transform-origin: center center;
+}
+
 .active-hand {
   scale: 1.3;
   transform-origin: center center;
   z-index: 1;
+}
+
+.active-hand.many-cards .cards-container {
+  transform: scale(calc(var(--card-scale, 0.85) / 1.3));
+}
+
+.active-hand:not(.many-cards) .cards-container {
+  transform: scale(1);
 }
 @media (prefers-reduced-motion: reduce) {
   .active-hand {

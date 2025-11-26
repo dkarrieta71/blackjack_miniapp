@@ -318,22 +318,30 @@ main {
   min-height: 0;
   gap: 0.5rem;
   padding: 0.5rem;
+  overflow: hidden;
+  max-height: 100%;
 }
 
 .dealer-hand {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  flex: 1;
+  flex: 0 1 auto;
   min-height: 0;
+  max-height: 45%;
+  overflow: hidden;
+  width: 100%;
 }
 
 .player-hand {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  flex: 1;
+  flex: 0 1 auto;
   min-height: 0;
+  max-height: 45%;
+  overflow: hidden;
+  width: 100%;
 }
 
 .actions-section {

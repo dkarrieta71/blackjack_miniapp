@@ -1,7 +1,6 @@
 <template>
   <div class="xp-progress-container" v-if="xpInfo">
     <div class="xp-header">
-      <div class="player-rank">{{ xpInfo.playerRank }}</div>
       <div class="xp-values">
         <span class="current-xp">{{ xpInfo.currentLevel.expCurrent }}</span>
         <span class="separator">/</span>
@@ -38,17 +37,9 @@ defineProps<{
 
 .xp-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   gap: 1rem;
-}
-
-.player-rank {
-  color: var(--color-gold);
-  font-size: 2rem;
-  font-variation-settings: 'wght' 600;
-  text-transform: capitalize;
-  letter-spacing: 0.05rem;
 }
 
 .xp-values {
@@ -100,10 +91,6 @@ defineProps<{
 @media (max-width: 768px) {
   .xp-progress-container {
     padding: 0.75rem;
-  }
-
-  .player-rank {
-    font-size: 1.6rem;
   }
 
   .xp-values {

@@ -94,13 +94,17 @@ function onClickCapture(e: MouseEvent) {
           <path d="M2 17l10 5 10-5" />
           <path d="M2 12l10 5 10-5" />
         </svg>
-        <span v-if="xpState.xpInfo">{{ xpState.xpInfo.playerRank }}</span>
       </button>
     </div>
 
-    <!-- XP Progress Bar (compact view) -->
-    <div class="xp-section" v-if="xpState.xpInfo">
-      <XPProgressBar :xp-info="xpState.xpInfo" />
+    <!-- XP Rank and Progress Bar Row -->
+    <div class="xp-rank-section" v-if="xpState.xpInfo">
+      <div class="player-rank-display">
+        <span class="rank-label">{{ xpState.xpInfo.playerRank }}</span>
+      </div>
+      <div class="xp-progress-wrapper">
+        <XPProgressBar :xp-info="xpState.xpInfo" />
+      </div>
     </div>
 
     <!-- Top Section: Bet Controls -->
@@ -209,10 +213,40 @@ main {
   transform: scale(1.05);
 }
 
-.xp-section {
+.xp-rank-section {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   padding: 0.5rem;
+  width: 80%;
+  margin: 0 auto;
   flex-shrink: 0;
   min-height: fit-content;
+}
+
+.player-rank-display {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 217, 0, 0.2);
+  border: 1px solid rgba(255, 217, 0, 0.4);
+  border-radius: 0.5rem;
+  min-height: fit-content;
+}
+
+.rank-label {
+  color: var(--color-gold);
+  font-size: 1.8rem;
+  font-variation-settings: 'wght' 600;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.xp-progress-wrapper {
+  flex: 3;
+  min-width: 0;
 }
 
 .top-section {

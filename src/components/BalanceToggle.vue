@@ -112,7 +112,7 @@ const isVisible = computed(() => {
 @media (max-width: 768px) {
   .toggle-option {
     padding: 0.6rem 1.2rem;
-    font-size: 2.0rem;
+    font-size: 1.6rem;
   }
 
   .toggle-button {

@@ -32,8 +32,7 @@ watch(
 .bank-wrapper {
   display: flex;
   flex-direction: row;
-  align-items: center;
-  gap: 0.5rem;
+  gap: 2rem;
 }
 
 .bank-container {

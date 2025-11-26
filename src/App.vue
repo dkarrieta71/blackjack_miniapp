@@ -196,21 +196,64 @@ main {
   gap: 0.5rem;
   padding: 0.75rem 1.25rem;
   margin-right: 5px;
-  background: rgba(255, 217, 0, 0.2);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 217, 0, 0.3) 0%,
+    rgba(255, 193, 7, 0.25) 50%,
+    rgba(255, 217, 0, 0.3) 100%
+  );
+  background-size: 200% 200%;
   border-radius: 0.5rem;
   color: var(--color-gold);
   font-size: 1.6rem;
   font-variation-settings: 'wght' 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   text-transform: capitalize;
   white-space: nowrap;
+  animation: gradientToSolid 4s ease-in-out infinite;
+  position: relative;
+  overflow: hidden;
 }
 
 .xp-button:hover {
-  background: rgba(255, 217, 0, 0.3);
-  border-color: var(--color-gold);
-  transform: scale(1.05);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 217, 0, 0.5) 0%,
+    rgba(255, 193, 7, 0.4) 50%,
+    rgba(255, 217, 0, 0.5) 100%
+  );
+  background-size: 200% 200%;
+  transform: scale(1.08);
+  box-shadow: 0 0 20px rgba(255, 217, 0, 0.5), inset 0 0 10px rgba(255, 217, 0, 0.2);
+  animation: gradientToSolid 2s ease-in-out infinite;
+}
+
+@keyframes gradientToSolid {
+  0% {
+    background: linear-gradient(
+      135deg,
+      rgba(255, 217, 0, 0.3) 0%,
+      rgba(255, 193, 7, 0.25) 50%,
+      rgba(255, 217, 0, 0.3) 100%
+    );
+    background-size: 200% 200%;
+    background-position: 0% 50%;
+  }
+  50% {
+    background: rgba(255, 217, 0, 0.2);
+    background-size: 100% 100%;
+  }
+  100% {
+    background: linear-gradient(
+      135deg,
+      rgba(255, 217, 0, 0.3) 0%,
+      rgba(255, 193, 7, 0.25) 50%,
+      rgba(255, 217, 0, 0.3) 100%
+    );
+    background-size: 200% 200%;
+    background-position: 100% 50%;
+  }
 }
 
 .xp-rank-section {

@@ -97,7 +97,7 @@ function isSplitCard(card: Card) {
 }
 
 .active-hand {
-  scale: 1.3;
+  scale: 1.0;
   transform-origin: center center;
   z-index: 1;
 }

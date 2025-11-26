@@ -29,7 +29,7 @@ const total = computed(() => {
   align-items: center;
   justify-content: center;
   position: absolute;
-  bottom: -2rem;
+  bottom: 0rem;
   right: 0;
   min-width: 4rem;
   height: 3rem;

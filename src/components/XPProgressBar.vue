@@ -5,7 +5,7 @@
       <div class="xp-values">
         <span class="current-xp">{{ xpInfo.currentLevel.expCurrent }}</span>
         <span class="separator">/</span>
-        <span class="required-xp">{{ xpInfo.nextLevel.xpRequired }}</span>
+        <span class="required-xp">{{ xpInfo.nextLevel.expRequired }}</span>
       </div>
     </div>
     <div class="progress-bar-wrapper">

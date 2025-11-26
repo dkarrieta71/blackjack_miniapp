@@ -2,26 +2,31 @@
   <div class="playthrough-container" v-if="shouldShow">
     <div class="playthrough-header">
       <div class="bonus-credits-label">BONUS CREDITS</div>
-      <div class="bonus-credits-amount">${{ xpInfo.bonusCreditsBalance.toFixed(2) }}</div>
+      <div class="bonus-credits-amount">
+        ${{ props.xpInfo ? props.xpInfo.bonusCreditsBalance.toFixed(2) : '0.00' }}
+      </div>
     </div>
-    <div class="playthrough-status" :class="{ complete: xpInfo.isPlaythroughComplete }">
+    <div
+      class="playthrough-status"
+      :class="{ complete: props.xpInfo?.isPlaythroughComplete }"
+    >
       {{ statusText }}
     </div>
     <div class="progress-bar-wrapper">
       <div
         class="progress-bar"
-        :class="{ complete: xpInfo.isPlaythroughComplete }"
-        :style="{ width: `${xpInfo.playthroughPercentage}%` }"
+        :class="{ complete: props.xpInfo?.isPlaythroughComplete }"
+        :style="{ width: `${props.xpInfo?.playthroughPercentage ?? 0}%` }"
       ></div>
     </div>
     <div class="playthrough-details">
       <span class="progress-text">
-        ${{ xpInfo.playthroughProgress.toFixed(2) }} / ${{ xpInfo.playthroughRequired.toFixed(2) }}
+        ${{ props.xpInfo?.playthroughProgress.toFixed(2) ?? '0.00' }} / ${{ props.xpInfo?.playthroughRequired.toFixed(2) ?? '0.00' }}
       </span>
-      <span class="percentage-text">{{ Math.round(xpInfo.playthroughPercentage) }}%</span>
+      <span class="percentage-text">{{ Math.round(props.xpInfo?.playthroughPercentage ?? 0) }}%</span>
     </div>
-    <div class="redeemable-notice" v-if="xpInfo.isPlaythroughComplete && xpInfo.redeemableBonusCredits > 0">
-      ✓ ${{ xpInfo.redeemableBonusCredits.toFixed(2) }} ready to use
+    <div class="redeemable-notice" v-if="props.xpInfo?.isPlaythroughComplete && (props.xpInfo?.redeemableBonusCredits ?? 0) > 0">
+      ✓ ${{ props.xpInfo?.redeemableBonusCredits.toFixed(2) ?? '0.00' }} ready to use
     </div>
   </div>
 </template>

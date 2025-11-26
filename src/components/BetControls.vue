@@ -91,8 +91,9 @@ async function placeBetHandler() {
 
 .bet-input-group {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 0.5rem;
+  align-items: center;
 }
 
 .bet-input-group label {
@@ -106,6 +107,7 @@ async function placeBetHandler() {
   display: flex;
   gap: 0.5rem;
   align-items: center;
+  flex: 1;
 }
 
 .input-wrapper input {

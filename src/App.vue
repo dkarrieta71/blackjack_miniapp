@@ -80,33 +80,6 @@ function onClickCapture(e: MouseEvent) {
       <PlayerBank />
     </div>
 
-    <!-- XP Rank and Progress Bar Row -->
-    <div class="xp-rank-section" v-if="xpState.xpInfo">
-      <div class="player-rank-display">
-        <button @click="isXPPanelOpen = true" class="xp-button" aria-label="Open XP Panel">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M12 2L2 7l10 5 10-5-10-5z" />
-            <path d="M2 17l10 5 10-5" />
-            <path d="M2 12l10 5 10-5" />
-          </svg>
-        </button>
-        <span class="rank-label">{{ xpState.xpInfo.playerRank }}</span>
-      </div>
-      <div class="xp-progress-wrapper">
-        <XPProgressBar :xp-info="xpState.xpInfo" />
-      </div>
-    </div>
-
     <!-- Top Section: Bet Controls -->
     <div class="top-section">
       <BetControls />
@@ -148,6 +121,33 @@ function onClickCapture(e: MouseEvent) {
     <section class="actions-section">
       <PlayerToolbar />
     </section>
+
+    <!-- XP Rank and Progress Bar Row (Footer) -->
+    <div class="xp-rank-section" v-if="xpState.xpInfo">
+      <div class="player-rank-display">
+        <button @click="isXPPanelOpen = true" class="xp-button" aria-label="Open XP Panel">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M12 2L2 7l10 5 10-5-10-5z" />
+            <path d="M2 17l10 5 10-5" />
+            <path d="M2 12l10 5 10-5" />
+          </svg>
+        </button>
+        <span class="rank-label">{{ xpState.xpInfo.playerRank }}</span>
+      </div>
+      <div class="xp-progress-wrapper">
+        <XPProgressBar :xp-info="xpState.xpInfo" />
+      </div>
+    </div>
   </main>
   <TitleScreen />
   <XPPanel v-model:is-open="isXPPanelOpen" />
@@ -195,8 +195,8 @@ main {
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.25rem;
+  margin-right: 5px;
   background: rgba(255, 217, 0, 0.2);
-  border: 1px solid rgba(255, 217, 0, 0.4);
   border-radius: 0.5rem;
   color: var(--color-gold);
   font-size: 1.6rem;

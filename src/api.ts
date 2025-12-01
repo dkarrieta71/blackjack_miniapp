@@ -147,12 +147,14 @@ export async function getUserInfo(telegramId: number, initData?: string): Promis
  * @param telegramId - Telegram user ID
  * @param betAmount - Amount being bet
  * @param newBalance - New balance after bet deduction
+ * @param useRealFunds - Whether the bet is using real funds (true) or bonus credit balance (false)
  * @param initData - Telegram Web App init data for authentication (optional)
  */
 export async function updateBalanceOnBet(
   telegramId: number,
   betAmount: number,
   newBalance: number,
+  useRealFunds: boolean,
   initData?: string
 ): Promise<void> {
   try {
@@ -171,6 +173,7 @@ export async function updateBalanceOnBet(
         telegramId,
         betAmount,
         newBalance,
+        useRealFunds,
       }),
     })
 

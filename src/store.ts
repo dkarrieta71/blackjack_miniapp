@@ -393,7 +393,7 @@ export async function placeBet(player: Player, hand: Hand, amount: number) {
   const tg = getTelegramWebApp()
   const initData = tg?.initData || undefined
   if (telegramId) {
-    updateBalanceOnBet(telegramId, amount, player.bank, initData).catch(err => {
+    updateBalanceOnBet(telegramId, amount, player.bank, !state.usedCredits, initData).catch(err => {
       console.error('Failed to update balance on bet:', err)
     })
   }

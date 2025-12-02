@@ -787,9 +787,16 @@ async function collectWinnings() {
     }
 
     // Show XP notification after finishing bet
-    // Win = 2 XP, Lose = 1 XP
-    const isWin = totalPayout > 0
-    refreshXPInfo(isWin)
+    // Determine result: win, lose, or push
+    let gameResult: 'win' | 'lose' | 'push'
+    if (totalPayout > 0) {
+      gameResult = 'win'
+    } else if (totalPayout < 0) {
+      gameResult = 'lose'
+    } else {
+      gameResult = 'push'
+    }
+    refreshXPInfo(gameResult, state.usedCredits)
 
     // Reset hands after recording
     for (const hand of player.hands) {
@@ -852,13 +859,24 @@ export async function fetchXPInfo(forceRefresh: boolean = false): Promise<XPInfo
 
 /**
  * Show XP notification after finishing a bet and update XP progress
- * @param isWin - Whether the player won (true) or lost (false)
- * @returns The amount of XP earned (2 for win, 1 for lose)
+ * @param result - The game result: 'win', 'lose', or 'push'
+ * @param usedCredits - Whether bonus credits were used (true) or real funds (false)
+ * @returns The amount of XP earned
  */
-export function refreshXPInfo(isWin: boolean): number {
-  const earnedXP = isWin ? 2 : 1
+export function refreshXPInfo(result: 'win' | 'lose' | 'push', usedCredits: boolean): number {
+  // Calculate XP based on result and balance type
+  // Real funds: win=2xp, lose=1xp, push=0.5xp
+  // Bonus credit: win=1xp, lose=0.5xp, push=0.25xp
+  let earnedXP: number
+  if (usedCredits) {
+    // Bonus credit rates
+    earnedXP = result === 'win' ? 1 : result === 'lose' ? 0.5 : 0.25
+  } else {
+    // Real funds rates
+    earnedXP = result === 'win' ? 2 : result === 'lose' ? 1 : 0.5
+  }
 
-  console.log(`XP earned: ${earnedXP} (${isWin ? 'win' : 'lose'})`)
+  console.log(`XP earned: ${earnedXP} (${result}, ${usedCredits ? 'bonus credit' : 'real funds'})`)
 
   // Update XP info if it exists
   if (xpState.xpInfo) {

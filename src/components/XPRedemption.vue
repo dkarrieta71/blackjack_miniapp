@@ -172,8 +172,10 @@ async function handleRedeem() {
 
 .available-xp {
   color: var(--color-white);
-  font-size: 1.6rem;
-  opacity: 0.9;
+  font-size: 1.8rem;
+  opacity: 1;
+  font-variation-settings: 'wght' 600;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
 }
 
 .conversion-info {
@@ -187,14 +189,17 @@ async function handleRedeem() {
 
 .rate {
   color: var(--color-gold);
-  font-size: 1.6rem;
-  font-variation-settings: 'wght' 600;
+  font-size: 1.8rem;
+  font-variation-settings: 'wght' 700;
+  text-shadow: 0 0 8px rgba(255, 217, 0, 0.4);
 }
 
 .minimum {
-  color: var(--color-off-white);
-  font-size: 1.4rem;
-  opacity: 0.8;
+  color: var(--color-white);
+  font-size: 1.6rem;
+  opacity: 1;
+  font-variation-settings: 'wght' 600;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
 }
 
 .input-section {
@@ -264,9 +269,11 @@ async function handleRedeem() {
 }
 
 .preview-label {
-  color: var(--color-off-white);
-  font-size: 1.4rem;
-  opacity: 0.8;
+  color: var(--color-white);
+  font-size: 1.6rem;
+  opacity: 1;
+  font-variation-settings: 'wght' 600;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
 }
 
 .preview-amount {

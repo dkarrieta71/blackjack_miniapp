@@ -70,10 +70,12 @@ const statusText = computed(() => {
 
 .bonus-credits-label {
   color: var(--color-white);
-  font-size: 1.8rem;
-  font-variation-settings: 'wght' 500;
+  font-size: 2rem;
+  font-variation-settings: 'wght' 700;
   text-transform: uppercase;
   letter-spacing: 0.1rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+  opacity: 1;
 }
 
 .bonus-credits-amount {
@@ -84,11 +86,13 @@ const statusText = computed(() => {
 
 .playthrough-status {
   color: #ffa500;
-  font-size: 1.6rem;
-  font-variation-settings: 'wght' 600;
+  font-size: 1.8rem;
+  font-variation-settings: 'wght' 700;
   text-align: center;
   text-transform: uppercase;
   letter-spacing: 0.05rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+  opacity: 1;
 }
 
 .playthrough-status.complete {
@@ -121,9 +125,11 @@ const statusText = computed(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: var(--color-off-white);
-  font-size: 1.4rem;
-  opacity: 0.8;
+  color: var(--color-white);
+  font-size: 1.6rem;
+  opacity: 1;
+  font-variation-settings: 'wght' 600;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
 }
 
 .redeemable-notice {

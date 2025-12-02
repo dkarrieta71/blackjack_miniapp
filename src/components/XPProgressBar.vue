@@ -47,20 +47,23 @@ defineProps<{
   align-items: center;
   gap: 0.25rem;
   color: var(--color-white);
-  font-size: 1.8rem;
-  font-variation-settings: 'wght' 500;
+  font-size: 2rem;
+  font-variation-settings: 'wght' 600;
 }
 
 .current-xp {
   color: var(--color-gold);
+  text-shadow: 0 0 8px rgba(255, 217, 0, 0.5);
 }
 
 .separator {
-  opacity: 0.6;
+  opacity: 1;
+  color: var(--color-white);
 }
 
 .required-xp {
-  opacity: 0.8;
+  opacity: 1;
+  color: var(--color-white);
 }
 
 .progress-bar-wrapper {
@@ -81,11 +84,13 @@ defineProps<{
 }
 
 .xp-until-next {
-  color: var(--color-off-white);
-  font-size: 2.0rem;
+  color: var(--color-white);
+  font-size: 2.2rem;
   text-align: center;
-  opacity: 0.8;
+  opacity: 1;
   text-transform: capitalize;
+  font-variation-settings: 'wght' 600;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 @media (max-width: 768px) {

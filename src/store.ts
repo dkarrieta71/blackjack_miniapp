@@ -733,7 +733,7 @@ async function collectWinnings() {
         totalPayout: totalPayout,
         newBalance: player.bank,
       }
-      await recordGameResult(telegramId, gameResult, state.usedCredits, initData).catch(err => {
+      recordGameResult(telegramId, gameResult, state.usedCredits, initData).catch(err => {
         console.error('Failed to record game result:', err)
       })
 
@@ -781,7 +781,7 @@ async function collectWinnings() {
         })) : undefined,
       }
 
-      await syncMatch(matchData, initData).catch(err => {
+      syncMatch(matchData, initData).catch(err => {
         console.error('Failed to sync match:', err)
       })
     }

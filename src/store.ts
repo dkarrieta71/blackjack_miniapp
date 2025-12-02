@@ -851,7 +851,7 @@ export async function fetchXPInfo(forceRefresh: boolean = false): Promise<XPInfo
 }
 
 /**
- * Show XP notification after finishing a bet
+ * Show XP notification after finishing a bet and update XP progress
  * @param isWin - Whether the player won (true) or lost (false)
  * @returns The amount of XP earned (2 for win, 1 for lose)
  */
@@ -859,6 +859,34 @@ export function refreshXPInfo(isWin: boolean): number {
   const earnedXP = isWin ? 2 : 1
 
   console.log(`XP earned: ${earnedXP} (${isWin ? 'win' : 'lose'})`)
+
+  // Update XP info if it exists
+  if (xpState.xpInfo) {
+    // Update total XP
+    xpState.xpInfo.totalXP += earnedXP
+
+    // Update current level XP
+    xpState.xpInfo.currentLevel.expCurrent += earnedXP
+
+    // Check if leveled up (expCurrent exceeds expRequired)
+    if (xpState.xpInfo.currentLevel.expCurrent >= xpState.xpInfo.currentLevel.expRequired) {
+      // Leveled up - need to fetch from backend to get accurate level info
+      const telegramId = getTelegramUserId()
+      if (telegramId) {
+        fetchXPInfo(true).catch(err => {
+          console.error('Failed to refresh XP info after level up:', err)
+        })
+      }
+    } else {
+      // Update progress percentage for current level
+      xpState.xpInfo.progressPercentage =
+        (xpState.xpInfo.currentLevel.expCurrent / xpState.xpInfo.currentLevel.expRequired) * 100
+
+      // Update XP until next level
+      xpState.xpInfo.xpUntilNextLevel =
+        Math.max(0, xpState.xpInfo.currentLevel.expRequired - xpState.xpInfo.currentLevel.expCurrent)
+    }
+  }
 
   // Show notification
   xpState.earnedXP = earnedXP

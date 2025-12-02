@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { state, dealer, setInitialBalances, DEFAULT_STARTING_BANK, refreshXPInfo, xpState } from '@/store'
+import { state, dealer, setInitialBalances, DEFAULT_STARTING_BANK, fetchXPInfo, xpState } from '@/store'
 import { computed, onMounted, ref } from 'vue'
 import GameHand from '@/components/GameHand.vue'
 import SvgSprite from '@/components/SvgSprite.vue'
@@ -46,7 +46,7 @@ onMounted(async () => {
         xpState.lastUpdated = Date.now()
       } else {
         // Fetch XP info separately
-        refreshXPInfo().catch(err => {
+        fetchXPInfo().catch(err => {
           console.error('Failed to load XP info:', err)
         })
       }

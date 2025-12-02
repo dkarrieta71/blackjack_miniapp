@@ -31,7 +31,7 @@
 
 <script setup lang="ts">
 import { watch } from 'vue'
-import { xpState, refreshXPInfo } from '@/store'
+import { xpState, fetchXPInfo } from '@/store'
 import XPProgressBar from './XPProgressBar.vue'
 import PlaythroughProgress from './PlaythroughProgress.vue'
 import XPRedemption from './XPRedemption.vue'
@@ -50,13 +50,13 @@ function close() {
 
 async function handleRedeemed() {
   // Refresh XP info after redemption
-  await refreshXPInfo(true)
+  await fetchXPInfo(true)
 }
 
 // Refresh XP info when panel opens
 watch(() => props.isOpen, (isOpen) => {
   if (isOpen) {
-    refreshXPInfo(true)
+    fetchXPInfo(true)
   }
 })
 </script>

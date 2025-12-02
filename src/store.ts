@@ -786,11 +786,10 @@ async function collectWinnings() {
       })
     }
 
-    // Refresh XP info after game result (XP is automatically awarded by backend)
-    // Show notification when XP is earned after a hand finishes
-    refreshXPInfo(true, true).catch(err => {
-      console.error('Failed to refresh XP info:', err)
-    })
+    // Show XP notification after finishing bet
+    // Win = 2 XP, Lose = 1 XP
+    const isWin = totalPayout > 0
+    refreshXPInfo(isWin)
 
     // Reset hands after recording
     for (const hand of player.hands) {
@@ -818,61 +817,61 @@ function sleep(ms: number = 900) {
 }
 
 /**
- * Fetch and update XP information
+ * Fetch and update XP information from the backend
  * @param forceRefresh - Force refresh even if recently updated
- * @param showNotification - Whether to show XP earned notification (default: false, only true after hand finishes)
- * @returns The amount of XP earned (difference between old and new totalXP)
+ * @returns XP information
  */
-export async function refreshXPInfo(forceRefresh: boolean = false, showNotification: boolean = false): Promise<number> {
+export async function fetchXPInfo(forceRefresh: boolean = false): Promise<XPInfo | null> {
   const telegramId = getTelegramUserId()
   const tg = getTelegramWebApp()
   const initData = tg?.initData || undefined
-  console.log('Refreshing XP info', forceRefresh, showNotification);
 
   if (!telegramId) {
-    return 0 // Can't fetch XP without Telegram ID
+    return null // Can't fetch XP without Telegram ID
   }
 
   // Don't refresh if recently updated (within last 2 seconds) unless forced
   if (!forceRefresh && xpState.lastUpdated && Date.now() - xpState.lastUpdated < 2000) {
-    return 0
+    return xpState.xpInfo
   }
-
-  // Store previous XP to calculate earned amount
-  const previousXP = xpState.xpInfo?.totalXP ?? 0
 
   xpState.isLoading = true
   try {
     const xpInfo = await getXPInfo(telegramId, initData)
-    const newXP = xpInfo.totalXP
-    const earnedXP = newXP - previousXP
-
     xpState.xpInfo = xpInfo
     xpState.lastUpdated = Date.now()
-
-    // Show notification if XP was earned and notification is requested
-    if (earnedXP > 0 && showNotification) {
-      xpState.earnedXP = earnedXP
-      xpState.showXPNotification = true
-      console.log(`XP earned: ${earnedXP} (previous: ${previousXP}, new: ${newXP})`)
-      // Auto-hide notification after 3 seconds
-      setTimeout(() => {
-        xpState.showXPNotification = false
-        // Clear earned XP after animation completes
-        setTimeout(() => {
-          xpState.earnedXP = null
-        }, 400)
-      }, 3000)
-    } else if (showNotification) {
-      console.log(`No XP earned (previous: ${previousXP}, new: ${newXP}, earned: ${earnedXP})`)
-    }
-
-    return earnedXP
+    return xpInfo
   } catch (error) {
     console.error('Failed to fetch XP info:', error)
     // Don't throw - allow game to continue even if XP fetch fails
-    return 0
+    return null
   } finally {
     xpState.isLoading = false
   }
+}
+
+/**
+ * Show XP notification after finishing a bet
+ * @param isWin - Whether the player won (true) or lost (false)
+ * @returns The amount of XP earned (2 for win, 1 for lose)
+ */
+export function refreshXPInfo(isWin: boolean): number {
+  const earnedXP = isWin ? 2 : 1
+
+  console.log(`XP earned: ${earnedXP} (${isWin ? 'win' : 'lose'})`)
+
+  // Show notification
+  xpState.earnedXP = earnedXP
+  xpState.showXPNotification = true
+
+  // Auto-hide notification after 3 seconds
+  setTimeout(() => {
+    xpState.showXPNotification = false
+    // Clear earned XP after animation completes
+    setTimeout(() => {
+      xpState.earnedXP = null
+    }, 400)
+  }, 3000)
+
+  return earnedXP
 }

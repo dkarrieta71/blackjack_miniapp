@@ -185,8 +185,15 @@ const formattedXP = computed(() => {
 
 .xp-value {
   font-size: 3rem;
-  color: var(--color-gold);
-  text-shadow: 0 0 20px rgba(255, 255, 255, 0.8), 0 2px 4px rgba(0, 0, 0, 0.3);
+  color: var(--color-white);
+  text-shadow:
+    -2px -2px 0 var(--color-black),
+    2px -2px 0 var(--color-black),
+    -2px 2px 0 var(--color-black),
+    2px 2px 0 var(--color-black),
+    0 0 10px rgba(0, 0, 0, 0.8),
+    0 0 20px rgba(0, 0, 0, 0.6),
+    0 4px 8px rgba(0, 0, 0, 0.7);
   animation: numberPop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s both;
   font-variation-settings: 'wght' 900;
   line-height: 1;

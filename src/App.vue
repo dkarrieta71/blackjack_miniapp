@@ -12,6 +12,8 @@ import PlayerBank from '@/components/PlayerBank.vue'
 import BetControls from '@/components/BetControls.vue'
 import XPPanel from '@/components/XPPanel.vue'
 import XPProgressBar from '@/components/XPProgressBar.vue'
+import BalanceToggle from '@/components/BalanceToggle.vue'
+import XPNotification from '@/components/XPNotification.vue'
 import { getTelegramUserId, getTelegramWebApp } from '@/telegram'
 import { getUserInfo } from '@/api'
 
@@ -90,6 +92,9 @@ function onClickCapture(e: MouseEvent) {
 
     <!-- Middle Section: Cards (Dealer and Player) -->
     <section class="cards-section">
+      <div class="balance-toggle-container">
+        <BalanceToggle />
+      </div>
       <!-- Dealer's Hand -->
       <div class="dealer-hand">
         <GameHand
@@ -151,6 +156,10 @@ function onClickCapture(e: MouseEvent) {
   </main>
   <TitleScreen />
   <XPPanel v-model:is-open="isXPPanelOpen" />
+  <XPNotification
+    :xp-amount="xpState.earnedXP || 0"
+    :is-visible="xpState.showXPNotification && xpState.earnedXP !== null && xpState.earnedXP > 0"
+  />
 </template>
 
 <style scoped>
@@ -320,6 +329,14 @@ main {
   padding: 0.5rem;
   overflow: hidden;
   max-height: 100%;
+  position: relative;
+}
+
+.balance-toggle-container {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
 }
 
 .dealer-hand {

@@ -49,10 +49,14 @@ export const xpState = reactive<{
   xpInfo: XPInfo | null
   isLoading: boolean
   lastUpdated: number | null
+  earnedXP: number | null
+  showXPNotification: boolean
 }>({
   xpInfo: null,
   isLoading: false,
   lastUpdated: null,
+  earnedXP: null,
+  showXPNotification: false,
 })
 
 // Computed Properties
@@ -783,7 +787,8 @@ async function collectWinnings() {
     }
 
     // Refresh XP info after game result (XP is automatically awarded by backend)
-    refreshXPInfo(true).catch(err => {
+    // Show notification when XP is earned after a hand finishes
+    refreshXPInfo(true, true).catch(err => {
       console.error('Failed to refresh XP info:', err)
     })
 
@@ -815,29 +820,57 @@ function sleep(ms: number = 900) {
 /**
  * Fetch and update XP information
  * @param forceRefresh - Force refresh even if recently updated
+ * @param showNotification - Whether to show XP earned notification (default: false, only true after hand finishes)
+ * @returns The amount of XP earned (difference between old and new totalXP)
  */
-export async function refreshXPInfo(forceRefresh: boolean = false): Promise<void> {
+export async function refreshXPInfo(forceRefresh: boolean = false, showNotification: boolean = false): Promise<number> {
   const telegramId = getTelegramUserId()
   const tg = getTelegramWebApp()
   const initData = tg?.initData || undefined
 
   if (!telegramId) {
-    return // Can't fetch XP without Telegram ID
+    return 0 // Can't fetch XP without Telegram ID
   }
 
   // Don't refresh if recently updated (within last 2 seconds) unless forced
   if (!forceRefresh && xpState.lastUpdated && Date.now() - xpState.lastUpdated < 2000) {
-    return
+    return 0
   }
+
+  // Store previous XP to calculate earned amount
+  const previousXP = xpState.xpInfo?.totalXP ?? 0
 
   xpState.isLoading = true
   try {
     const xpInfo = await getXPInfo(telegramId, initData)
+    const newXP = xpInfo.totalXP
+    const earnedXP = newXP - previousXP
+
     xpState.xpInfo = xpInfo
     xpState.lastUpdated = Date.now()
+
+    // Show notification if XP was earned and notification is requested
+    if (earnedXP > 0 && showNotification) {
+      xpState.earnedXP = earnedXP
+      xpState.showXPNotification = true
+      console.log(`XP earned: ${earnedXP} (previous: ${previousXP}, new: ${newXP})`)
+      // Auto-hide notification after 3 seconds
+      setTimeout(() => {
+        xpState.showXPNotification = false
+        // Clear earned XP after animation completes
+        setTimeout(() => {
+          xpState.earnedXP = null
+        }, 400)
+      }, 3000)
+    } else if (showNotification) {
+      console.log(`No XP earned (previous: ${previousXP}, new: ${newXP}, earned: ${earnedXP})`)
+    }
+
+    return earnedXP
   } catch (error) {
     console.error('Failed to fetch XP info:', error)
     // Don't throw - allow game to continue even if XP fetch fails
+    return 0
   } finally {
     xpState.isLoading = false
   }

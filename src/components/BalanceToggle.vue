@@ -4,19 +4,17 @@
       @click="toggleBalanceType"
       class="toggle-button"
       :class="{
-        'active-credits': state.usedCredits,
-        'active-funds': !state.usedCredits,
+        'bonus-on': state.usedCredits,
+        'bonus-off': !state.usedCredits,
         'disabled': isDisabled
       }"
       :disabled="isDisabled"
-      :aria-label="state.usedCredits ? 'Using Bonus Credits' : 'Using Real Funds'"
+      :aria-label="state.usedCredits ? 'Bonus Balance: On' : 'Bonus Balance: Off'"
     >
-      <span class="toggle-option" :class="{ active: state.usedCredits }">
-        Bonus Credits
-      </span>
-      <span class="toggle-option" :class="{ active: !state.usedCredits }">
-        Real Funds
-      </span>
+      <div class="toggle-label">
+        <div class="label-line">Bonus</div>
+        <div class="label-line">Balance: {{ state.usedCredits ? 'On' : 'Off' }}</div>
+      </div>
     </button>
   </div>
 </template>
@@ -46,78 +44,108 @@ const isVisible = computed(() => {
 <style scoped>
 .balance-toggle {
   display: flex;
-  justify-content: center;
-  margin-top: 0.5rem;
+  justify-content: flex-end;
+  align-items: center;
 }
 
 .toggle-button {
   display: flex;
-  background: rgba(0, 0, 0, 0.4);
-  border: 3px solid var(--color-gold);
-  border-radius: 0.75rem;
-  padding: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 1rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-  overflow: hidden;
+  border: none;
+  background: transparent;
+  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+  width: fit-content;
+  min-width: 100px;
+  aspect-ratio: 1.2 / 1;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.toggle-button.bonus-off {
+  background: #c12e2e;
+  box-shadow: 0 4px 12px rgba(193, 46, 46, 0.3), 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.toggle-button.bonus-on {
+  background: #279d27d4;
+  box-shadow: 0 4px 12px rgba(39, 157, 39, 0.3), 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .toggle-button:hover:not(:disabled) {
-  background: rgba(0, 0, 0, 0.6);
-  border-color: #ffed4e;
+  transform: scale(1.08) translateY(-2px);
+  filter: brightness(1.15);
+}
+
+.toggle-button.bonus-off:hover:not(:disabled) {
+  box-shadow: 0 6px 20px rgba(193, 46, 46, 0.5), 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+.toggle-button.bonus-on:hover:not(:disabled) {
+  box-shadow: 0 6px 20px rgba(39, 157, 39, 0.5), 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+.toggle-button:active:not(:disabled) {
+  transform: scale(0.96) translateY(0);
+  transition: all 0.1s ease;
 }
 
 .toggle-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-}
-
-.toggle-option {
-  padding: 0.75rem 1.5rem;
-  font-size: 2.4rem;
-  font-variation-settings: 'wght' 500;
-  color: var(--color-white);
-  opacity: 0.6;
-  transition: all 0.2s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.05rem;
-  position: relative;
-  z-index: 1;
-}
-
-.toggle-option.active {
-  color: var(--color-gold);
-  opacity: 1;
-  font-variation-settings: 'wght' 700;
+  transform: none;
 }
 
 .toggle-button::before {
   content: '';
   position: absolute;
-  top: 0.5rem;
-  bottom: 0.5rem;
-  left: 0.5rem;
-  right: 45%;
-  background: rgba(255, 215, 0, 0.2);
-  border-radius: 0.5rem;
-  transition: all 0.3s ease;
-  z-index: 0;
+  inset: -2px;
+  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: -1;
 }
 
-.toggle-button.active-funds::before {
-  left: 50%;
-  right: 0.5rem;
+.toggle-button:hover:not(:disabled)::before {
+  opacity: 1;
+}
+
+.toggle-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.label-line {
+  font-size: 1.3rem;
+  font-variation-settings: 'wght' 600;
+  color: var(--color-white);
+  text-transform: uppercase;
+  letter-spacing: 0.05rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.3);
+  transition: text-shadow 0.3s ease;
+}
+
+.toggle-button:hover:not(:disabled) .label-line {
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6), 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 @media (max-width: 768px) {
-  .toggle-option {
-    padding: 0.6rem 1.2rem;
-    font-size: 1.6rem;
+  .toggle-button {
+    min-width: 85px;
+    padding: 0.5rem 0.8rem;
   }
 
-  .toggle-button {
-    border-width: 2px;
-    padding: 0.4rem;
+  .label-line {
+    font-size: 1.8rem;
   }
 }
 </style>

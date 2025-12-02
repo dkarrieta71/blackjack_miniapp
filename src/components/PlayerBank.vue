@@ -4,14 +4,12 @@
       <div class="balance-label">BALANCE</div>
       <div class="bank-amount">${{ state.players[0].bank.toFixed(2) }}</div>
     </div>
-    <BalanceToggle />
   </div>
 </template>
 
 <script lang="ts" setup>
 import { ref, watch } from 'vue'
 import { state } from '../store'
-import BalanceToggle from './BalanceToggle.vue'
 
 const isIncreasing = ref(false)
 

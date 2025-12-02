@@ -322,12 +322,12 @@ async function handleRedeem() {
   }
 
   .available-xp {
-    font-size: 1.4rem;
+    font-size: 1.8rem;
   }
 
   .rate,
   .minimum {
-    font-size: 1.3rem;
+    font-size: 1.7rem;
   }
 
   .xp-input {

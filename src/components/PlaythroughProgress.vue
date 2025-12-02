@@ -148,23 +148,24 @@ const statusText = computed(() => {
   }
 
   .bonus-credits-label {
-    font-size: 1.5rem;
+    font-size: 1.8rem;
   }
 
   .bonus-credits-amount {
-    font-size: 2rem;
+    font-size: 2.2rem;
   }
 
   .playthrough-status {
-    font-size: 1.4rem;
+    font-size: 1.8rem;
   }
 
   .playthrough-details {
-    font-size: 1.2rem;
+    font-size: 1.5rem;
+    letter-spacing: 0.1rem;
   }
 
   .redeemable-notice {
-    font-size: 1.2rem;
+    font-size: 1.5rem;
   }
 }
 </style>

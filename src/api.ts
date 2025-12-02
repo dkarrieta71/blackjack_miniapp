@@ -212,7 +212,7 @@ export async function recordGameResult(
       headers,
       body: JSON.stringify({
         telegramId,
-        useRealFunds: usedCredits,
+        useRealFunds: !usedCredits,
         ...gameResult,
       }),
     })

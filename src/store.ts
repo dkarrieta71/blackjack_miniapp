@@ -673,7 +673,7 @@ async function settleBets() {
       }
       // Blackjack is paid out immediately, so it is not handled here
       // Surrender: bet is already set to half in surrender() function, so just collect it
-      if (hand.result === 'win') hand.bet *= 2
+      if (hand.result === 'win') hand.bet *= 1.97
       if (['lose', 'bust'].includes(hand.result!)) hand.bet = 0
       // For surrender, bet is already half, so we don't modify it
       total += hand.bet + hand.insurance

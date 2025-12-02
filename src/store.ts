@@ -917,7 +917,7 @@ export function refreshXPInfo(result: 'win' | 'lose' | 'push', usedCredits: bool
     setTimeout(() => {
       xpState.earnedXP = null
     }, 400)
-  }, 3000)
+  }, 1800)
 
   return earnedXP
 }

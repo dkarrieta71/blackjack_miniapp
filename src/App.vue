@@ -106,7 +106,7 @@ function onClickCapture(e: MouseEvent) {
       </div>
 
       <!-- Divider -->
-      <div class="divider"></div>
+      <div class="divider" style="height: 20px"></div>
 
       <!-- Player's Hand -->
       <div class="player-hand">

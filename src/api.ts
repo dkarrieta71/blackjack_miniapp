@@ -195,6 +195,7 @@ export async function updateBalanceOnBet(
 export async function recordGameResult(
   telegramId: number,
   gameResult: GameResult,
+  usedCredits: boolean,
   initData?: string
 ): Promise<void> {
   try {
@@ -211,6 +212,7 @@ export async function recordGameResult(
       headers,
       body: JSON.stringify({
         telegramId,
+        useRealFunds: usedCredits,
         ...gameResult,
       }),
     })

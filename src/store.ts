@@ -733,7 +733,7 @@ async function collectWinnings() {
         totalPayout: totalPayout,
         newBalance: player.bank,
       }
-      recordGameResult(telegramId, gameResult, initData).catch(err => {
+      recordGameResult(telegramId, gameResult, state.usedCredits, initData).catch(err => {
         console.error('Failed to record game result:', err)
       })
 
@@ -827,6 +827,7 @@ export async function refreshXPInfo(forceRefresh: boolean = false, showNotificat
   const telegramId = getTelegramUserId()
   const tg = getTelegramWebApp()
   const initData = tg?.initData || undefined
+  console.log('Refreshing XP info', forceRefresh, showNotification);
 
   if (!telegramId) {
     return 0 // Can't fetch XP without Telegram ID

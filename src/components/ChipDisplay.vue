@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { chipState, CHIP_DENOMINATIONS, state } from '@/store'
+import { chipState, CHIP_DENOMINATIONS, state, xpState } from '@/store'
 
 // Get chips that have a count > 0, sorted by denomination
 const activeChips = computed(() => {
@@ -12,10 +12,10 @@ const activeChips = computed(() => {
 })
 
 // Check if there are any chips to display
-// Only show when placing a bet (no cards dealt yet)
+// Only show when placing a bet (no cards dealt yet) and XP notification is not showing
 const hasChips = computed(() => {
   const playerHand = state.players[0]?.hands[0]
-  const canShow = !playerHand || playerHand.cards.length === 0
+  const canShow = (!playerHand || playerHand.cards.length === 0) && !xpState.showXPNotification
   return activeChips.value.length > 0 && canShow
 })
 </script>
@@ -63,16 +63,76 @@ const hasChips = computed(() => {
 .chip-circle {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.3rem;
+  gap: 0.4rem;
   justify-content: center;
   align-items: center;
-  background: rgba(0, 0, 0, 0.4);
+  background: radial-gradient(
+    circle at center,
+    rgba(0, 0, 0, 0.7) 0%,
+    rgba(0, 0, 0, 0.6) 50%,
+    rgba(0, 0, 0, 0.8) 100%
+  );
   border-radius: 50%;
-  padding: 0.5rem;
-  min-width: 8rem;
-  min-height: 8rem;
-  backdrop-filter: blur(4px);
-  border: 2px solid rgba(255, 217, 0, 0.3);
+  padding: 1rem;
+  min-width: 10rem;
+  min-height: 10rem;
+  backdrop-filter: blur(12px);
+  position: relative;
+  box-shadow:
+    0 0 25px rgba(255, 217, 0, 0.4),
+    0 0 50px rgba(255, 217, 0, 0.2),
+    inset 0 0 25px rgba(255, 217, 0, 0.15),
+    0 4px 15px rgba(0, 0, 0, 0.6);
+  animation: chipCircleGlow 3s ease-in-out infinite;
+  border: 3px solid rgba(255, 217, 0, 0.6);
+}
+
+.chip-circle::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  right: -5px;
+  bottom: -5px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 217, 0, 0.5) 0%,
+    rgba(255, 193, 7, 0.3) 50%,
+    transparent 100%
+  );
+  z-index: -1;
+  filter: blur(10px);
+  animation: chipCirclePulse 2s ease-in-out infinite;
+  opacity: 0.8;
+}
+
+@keyframes chipCircleGlow {
+  0%, 100% {
+    box-shadow:
+      0 0 20px rgba(255, 217, 0, 0.3),
+      0 0 40px rgba(255, 217, 0, 0.15),
+      inset 0 0 20px rgba(255, 217, 0, 0.1),
+      0 4px 12px rgba(0, 0, 0, 0.5);
+  }
+  50% {
+    box-shadow:
+      0 0 30px rgba(255, 217, 0, 0.5),
+      0 0 60px rgba(255, 217, 0, 0.25),
+      inset 0 0 30px rgba(255, 217, 0, 0.15),
+      0 4px 12px rgba(0, 0, 0, 0.5);
+  }
+}
+
+@keyframes chipCirclePulse {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
 }
 
 .chip-stack {

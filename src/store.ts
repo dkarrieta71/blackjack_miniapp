@@ -331,7 +331,15 @@ export async function playRound() {
   state.isDealing = false
   state.insuranceOffered = false
   state.matchBets = [] // Reset match bets for new round
-  resetChips() // Reset chips for new round
+  // Delay chip reset if XP notification is showing to preserve chip display during notification
+  if (xpState.showXPNotification) {
+    // Wait for XP notification to finish before resetting chips
+    setTimeout(() => {
+      resetChips() // Reset chips for new round
+    }, 3000) // 2.5s notification + 0.4s animation + buffer
+  } else {
+    resetChips() // Reset chips for new round
+  }
   // Wait for user to place bet via BetControls component
 }
 

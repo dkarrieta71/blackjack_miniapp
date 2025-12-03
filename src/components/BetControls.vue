@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue'
-import { state, placeBet, startRound, chipState, chipsToAmount, setChipsFromAmount, resetChips } from '@/store'
+import { state, placeBet, startRound, chipState, chipsToAmount, setChipsFromAmount, resetChips, xpState } from '@/store'
 import { MINIMUM_BET } from '@/store'
 
 const betAmount = ref(MINIMUM_BET)
@@ -9,18 +9,27 @@ const currentHand = computed(() => player.value.hands[0])
 
 // Track if we're updating from chips (to avoid circular updates)
 const updatingFromChips = ref(false)
+// Track if we're resetting (to prevent chip updates during reset)
+const isResetting = ref(false)
 
 // Reset bet amount when a new round starts
 watch(() => currentHand.value.bet, (newBet) => {
   if (newBet === 0) {
+    isResetting.value = true
     betAmount.value = MINIMUM_BET
     resetChips()
+    // Don't update chips from betAmount during reset - wait a bit
+    nextTick(() => {
+      setTimeout(() => {
+        isResetting.value = false
+      }, 100)
+    })
   }
 })
 
 // Watch chip changes and update bet amount
 watch(() => chipState.chips, () => {
-  if (!updatingFromChips.value) {
+  if (!updatingFromChips.value && !isResetting.value) {
     const chipAmount = chipsToAmount(chipState.chips)
     if (chipAmount !== betAmount.value) {
       betAmount.value = Math.max(MINIMUM_BET, Math.min(chipAmount, player.value.bank))
@@ -28,9 +37,9 @@ watch(() => chipState.chips, () => {
   }
 }, { deep: true })
 
-// Watch bet amount changes and update chips
+// Watch bet amount changes and update chips (only if not resetting and XP notification is not showing)
 watch(betAmount, (newAmount) => {
-  if (!updatingFromChips.value) {
+  if (!updatingFromChips.value && !isResetting.value && !xpState.showXPNotification) {
     updatingFromChips.value = true
     setChipsFromAmount(newAmount)
     nextTick(() => {

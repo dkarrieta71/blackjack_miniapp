@@ -59,6 +59,78 @@ export const xpState = reactive<{
   showXPNotification: false,
 })
 
+// Chip denominations
+export const CHIP_DENOMINATIONS = [1, 5, 10, 25, 50, 100] as const
+
+// Chip state - tracks how many of each chip denomination are in the bet
+export const chipState = reactive<{
+  chips: Record<number, number> // denomination -> count
+}>({
+  chips: {},
+})
+
+// Initialize chip state
+CHIP_DENOMINATIONS.forEach(denom => {
+  chipState.chips[denom] = 0
+})
+
+/**
+ * Convert bet amount to chips (greedy algorithm - uses largest denominations first)
+ */
+export function amountToChips(amount: number): Record<number, number> {
+  const chips: Record<number, number> = {}
+  CHIP_DENOMINATIONS.forEach(denom => {
+    chips[denom] = 0
+  })
+
+  let remaining = amount
+  // Sort denominations in descending order
+  const sortedDenoms = [...CHIP_DENOMINATIONS].sort((a, b) => b - a)
+
+  for (const denom of sortedDenoms) {
+    const count = Math.floor(remaining / denom)
+    chips[denom] = count
+    remaining -= count * denom
+  }
+
+  return chips
+}
+
+/**
+ * Convert chips to total amount
+ */
+export function chipsToAmount(chips: Record<number, number>): number {
+  return Object.entries(chips).reduce((total, [denom, count]) => {
+    return total + Number(denom) * count
+  }, 0)
+}
+
+/**
+ * Add a chip to the bet
+ */
+export function addChip(denomination: number) {
+  chipState.chips[denomination] = (chipState.chips[denomination] || 0) + 1
+}
+
+/**
+ * Reset all chips
+ */
+export function resetChips() {
+  CHIP_DENOMINATIONS.forEach(denom => {
+    chipState.chips[denom] = 0
+  })
+}
+
+/**
+ * Set chips from an amount
+ */
+export function setChipsFromAmount(amount: number) {
+  const chips = amountToChips(amount)
+  CHIP_DENOMINATIONS.forEach(denom => {
+    chipState.chips[denom] = chips[denom] || 0
+  })
+}
+
 // Computed Properties
 
 export const dealer = computed(() => state.players[state.players.length - 1])
@@ -259,6 +331,7 @@ export async function playRound() {
   state.isDealing = false
   state.insuranceOffered = false
   state.matchBets = [] // Reset match bets for new round
+  resetChips() // Reset chips for new round
   // Wait for user to place bet via BetControls component
 }
 

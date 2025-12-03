@@ -14,6 +14,8 @@ import XPPanel from '@/components/XPPanel.vue'
 import XPProgressBar from '@/components/XPProgressBar.vue'
 import BalanceToggle from '@/components/BalanceToggle.vue'
 import XPNotification from '@/components/XPNotification.vue'
+import ChipSelector from '@/components/ChipSelector.vue'
+import ChipDisplay from '@/components/ChipDisplay.vue'
 import { getTelegramUserId, getTelegramWebApp } from '@/telegram'
 import { getUserInfo } from '@/api'
 
@@ -116,7 +118,13 @@ function onClickCapture(e: MouseEvent) {
           :player="player"
           :key="hand.id"
         />
+        <ChipDisplay />
       </div>
+    </section>
+
+    <!-- Chip Selector Section (above divider) -->
+    <section class="chip-section">
+      <ChipSelector />
     </section>
 
     <!-- Divider -->
@@ -357,8 +365,18 @@ main {
   flex: 0 1 auto;
   min-height: 0;
   max-height: 45%;
-  overflow: hidden;
+  overflow: visible;
   width: 100%;
+  position: relative;
+}
+
+.chip-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0.5rem;
+  min-height: fit-content;
 }
 
 .actions-section {

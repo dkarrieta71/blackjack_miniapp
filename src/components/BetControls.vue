@@ -1,16 +1,41 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
-import { state, placeBet, startRound } from '@/store'
+import { ref, computed, watch, nextTick } from 'vue'
+import { state, placeBet, startRound, chipState, chipsToAmount, setChipsFromAmount, resetChips } from '@/store'
 import { MINIMUM_BET } from '@/store'
 
 const betAmount = ref(MINIMUM_BET)
 const player = computed(() => state.players[0])
 const currentHand = computed(() => player.value.hands[0])
 
+// Track if we're updating from chips (to avoid circular updates)
+const updatingFromChips = ref(false)
+
 // Reset bet amount when a new round starts
 watch(() => currentHand.value.bet, (newBet) => {
   if (newBet === 0) {
     betAmount.value = MINIMUM_BET
+    resetChips()
+  }
+})
+
+// Watch chip changes and update bet amount
+watch(() => chipState.chips, () => {
+  if (!updatingFromChips.value) {
+    const chipAmount = chipsToAmount(chipState.chips)
+    if (chipAmount !== betAmount.value) {
+      betAmount.value = Math.max(MINIMUM_BET, Math.min(chipAmount, player.value.bank))
+    }
+  }
+}, { deep: true })
+
+// Watch bet amount changes and update chips
+watch(betAmount, (newAmount) => {
+  if (!updatingFromChips.value) {
+    updatingFromChips.value = true
+    setChipsFromAmount(newAmount)
+    nextTick(() => {
+      updatingFromChips.value = false
+    })
   }
 })
 

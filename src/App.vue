@@ -339,7 +339,7 @@ main {
   min-height: 0;
   gap: 0.5rem;
   padding: 0.5rem;
-  overflow: hidden;
+  overflow: visible;
   max-height: 100%;
   position: relative;
 }

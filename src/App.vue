@@ -21,6 +21,9 @@ import { getUserInfo } from '@/api'
 
 const player = computed(() => state.players[0])
 const isXPPanelOpen = ref(false)
+const hasBet = computed(() => {
+  return (player.value?.hands[0]?.bet ?? 0) > 0
+})
 
 onMounted(async () => {
   initSound()
@@ -118,13 +121,14 @@ function onClickCapture(e: MouseEvent) {
           :player="player"
           :key="hand.id"
         />
-        <ChipDisplay />
+        <ChipDisplay v-if="!hasBet" />
       </div>
     </section>
 
     <!-- Chip Selector Section (above divider) -->
     <section class="chip-section">
       <ChipSelector />
+      <ChipDisplay v-if="hasBet" />
     </section>
 
     <!-- Divider -->
@@ -373,7 +377,7 @@ main {
 .chip-section {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   flex-shrink: 0;
   padding: 0.5rem;
   min-height: fit-content;

@@ -9,6 +9,9 @@ const currentHand = computed(() => player.value.hands[0])
 // Check if betting is disabled
 const isDisabled = computed(() => state.isDealing || currentHand.value.bet > 0)
 
+// Hide chip selector when bet is placed
+const shouldShow = computed(() => currentHand.value.bet === 0)
+
 function handleChipClick(denomination: number) {
   if (isDisabled.value) return
 
@@ -33,7 +36,7 @@ const chipRows = computed(() => {
 </script>
 
 <template>
-  <div class="chip-selector">
+  <div v-if="shouldShow" class="chip-selector">
     <div v-for="(row, rowIndex) in chipRows" :key="rowIndex" class="chip-row">
       <button
         v-for="denomination in row"
@@ -59,17 +62,18 @@ const chipRows = computed(() => {
   flex-direction: column;
   gap: 0.5rem;
   padding: 0.5rem;
+  align-items: flex-start;
 }
 
 .chip-row {
   display: flex;
   gap: 0.5rem;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 .chip-button {
-  width: 5rem;
-  height: 5rem;
+  width: 4rem;
+  height: 4rem;
   border-radius: 50%;
   cursor: pointer;
   display: flex;
@@ -120,7 +124,7 @@ const chipRows = computed(() => {
 
 .chip-value {
   color: rgba(255, 255, 255, 0.95);
-  font-size: 1.4rem;
+  font-size: 1.15rem;
   font-weight: 700;
   font-variation-settings: 'wght' 700;
   text-shadow:
@@ -128,8 +132,8 @@ const chipRows = computed(() => {
     0 0 6px rgba(0, 0, 0, 0.5);
   background: rgba(0, 0, 0, 0.4);
   border-radius: 50%;
-  width: 2.2rem;
-  height: 2.2rem;
+  width: 1.8rem;
+  height: 1.8rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -141,14 +145,14 @@ const chipRows = computed(() => {
 
 /* Adjust chip sizes for smaller denominations */
 .chip-button[style*="1"] .chip-value {
-  font-size: 1.2rem;
-  width: 2rem;
-  height: 2rem;
+  font-size: 1rem;
+  width: 1.6rem;
+  height: 1.6rem;
 }
 
 .chip-button[style*="5"] .chip-value,
 .chip-button[style*="10"] .chip-value {
-  font-size: 1.3rem;
+  font-size: 1.1rem;
 }
 </style>
 

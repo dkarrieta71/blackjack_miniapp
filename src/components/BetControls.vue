@@ -37,9 +37,9 @@ watch(() => chipState.chips, () => {
   }
 }, { deep: true })
 
-// Watch bet amount changes and update chips (only if not resetting and XP notification is not showing)
+// Watch bet amount changes and update chips (only if not resetting, XP notification is not showing, and no bet is placed yet)
 watch(betAmount, (newAmount) => {
-  if (!updatingFromChips.value && !isResetting.value && !xpState.showXPNotification) {
+  if (!updatingFromChips.value && !isResetting.value && !xpState.showXPNotification && currentHand.value.bet === 0) {
     updatingFromChips.value = true
     setChipsFromAmount(newAmount)
     nextTick(() => {

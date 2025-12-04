@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { computed } from 'vue'
 import { chipState, CHIP_DENOMINATIONS, state, xpState } from '@/store'
 
@@ -12,17 +12,44 @@ const activeChips = computed(() => {
 })
 
 // Check if there are any chips to display
-// Only show when placing a bet (no cards dealt yet) and XP notification is not showing
+// Show chips when they exist and XP notification is not showing
 const hasChips = computed(() => {
-  const playerHand = state.players[0]?.hands[0]
-  const canShow = (!playerHand || playerHand.cards.length === 0) && !xpState.showXPNotification
+  const canShow = !xpState.showXPNotification
   return activeChips.value.length > 0 && canShow
+})
+
+// Check if a bet has been placed
+const hasBet = computed(() => {
+  const playerHand = state.players[0]?.hands[0]
+  return (playerHand?.bet ?? 0) > 0
 })
 </script>
 
 <template>
-  <div v-if="hasChips" class="chip-display">
-    <div class="chip-circle">
+  <div v-if="hasChips" class="chip-display" :class="{ 'has-bet': hasBet }">
+    <div v-if="!hasBet" class="chip-circle">
+      <div
+        v-for="chip in activeChips"
+        :key="chip.denomination"
+        class="chip-stack"
+      >
+        <div
+          v-for="i in chip.count"
+          :key="i"
+          class="chip"
+          :style="{
+            '--stack-offset': (i - 1) * 2,
+            '--rotation': (i - 1) * 5
+          }"
+        >
+          <img :src="`/chip-${chip.denomination}.svg`" alt="" class="chip-svg" />
+          <div class="chip-inner">
+            <span class="chip-value">{{ chip.denomination }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div v-else class="chip-list">
       <div
         v-for="chip in activeChips"
         :key="chip.denomination"
@@ -58,6 +85,24 @@ const hasChips = computed(() => {
   width: 100%;
   display: flex;
   justify-content: center;
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.chip-display.has-bet {
+  position: static;
+  bottom: auto;
+  left: auto;
+  transform: none;
+  width: auto;
+  justify-content: flex-start;
+}
+
+.chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: flex-start;
 }
 
 .chip-circle {
@@ -211,4 +256,3 @@ const hasChips = computed(() => {
   font-size: 0.95rem;
 }
 </style>
-

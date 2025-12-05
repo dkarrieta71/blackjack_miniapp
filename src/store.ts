@@ -113,6 +113,15 @@ export function addChip(denomination: number) {
 }
 
 /**
+ * Remove a chip from the bet
+ */
+export function removeChip(denomination: number) {
+  if (chipState.chips[denomination] > 0) {
+    chipState.chips[denomination] = chipState.chips[denomination] - 1
+  }
+}
+
+/**
  * Reset all chips
  */
 export function resetChips() {

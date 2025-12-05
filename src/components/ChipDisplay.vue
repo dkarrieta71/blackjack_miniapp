@@ -1,6 +1,7 @@
 ﻿<script setup lang="ts">
 import { computed } from 'vue'
-import { chipState, CHIP_DENOMINATIONS, state, xpState } from '@/store'
+import { chipState, CHIP_DENOMINATIONS, state, xpState, removeChip } from '@/store'
+import { playSound, Sounds } from '@/sound'
 
 // Get chips that have a count > 0, sorted by denomination
 const activeChips = computed(() => {
@@ -23,10 +24,22 @@ const hasBet = computed(() => {
   const playerHand = state.players[0]?.hands[0]
   return (playerHand?.bet ?? 0) > 0
 })
+
+// Check if chips can be removed (same conditions as adding - no bet placed, not dealing)
+const canRemoveChips = computed(() => {
+  const playerHand = state.players[0]?.hands[0]
+  return !state.isDealing && (playerHand?.bet ?? 0) === 0
+})
+
+function handleChipClick(denomination: number) {
+  if (!canRemoveChips.value) return
+  removeChip(denomination)
+  playSound(Sounds.Click)
+}
 </script>
 
 <template>
-  <div v-if="hasChips" class="chip-display" :class="{ 'has-bet': hasBet }">
+  <div v-if="hasChips" class="chip-display" :class="{ 'has-bet': hasBet, 'clickable': canRemoveChips }">
     <div v-if="!hasBet" class="chip-circle">
       <div
         v-for="chip in activeChips"
@@ -37,10 +50,13 @@ const hasBet = computed(() => {
           v-for="i in chip.count"
           :key="i"
           class="chip"
+          :class="{ 'clickable-chip': canRemoveChips }"
           :style="{
             '--stack-offset': (i - 1) * 2,
             '--rotation': (i - 1) * 5
           }"
+          @click="handleChipClick(chip.denomination)"
+          :aria-label="canRemoveChips ? `Remove ${chip.denomination} chip` : undefined"
         >
           <img :src="`/chip-${chip.denomination}.svg`" alt="" class="chip-svg" />
           <div class="chip-inner">
@@ -86,6 +102,10 @@ const hasBet = computed(() => {
   display: flex;
   justify-content: center;
   transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.chip-display.clickable {
+  pointer-events: auto;
 }
 
 .chip-display.has-bet {
@@ -196,10 +216,26 @@ const hasBet = computed(() => {
   transform: translateY(calc(var(--stack-offset, 0) * -1px)) rotate(calc(var(--rotation, 0) * 1deg));
   overflow: hidden;
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+  transition: all 0.2s ease;
 }
 
 .chip:first-child {
   position: relative;
+}
+
+.chip.clickable-chip {
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.chip.clickable-chip:hover {
+  transform: translateY(calc(var(--stack-offset, 0) * -1px)) rotate(calc(var(--rotation, 0) * 1deg)) scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  z-index: 100;
+}
+
+.chip.clickable-chip:active {
+  transform: translateY(calc(var(--stack-offset, 0) * -1px)) rotate(calc(var(--rotation, 0) * 1deg)) scale(1.05);
 }
 
 .chip-svg {

@@ -45,6 +45,9 @@ function handleChipClick(denomination: number) {
         v-for="chip in activeChips"
         :key="chip.denomination"
         class="chip-stack"
+        :class="{ 'clickable-stack': canRemoveChips }"
+        @click="canRemoveChips && handleChipClick(chip.denomination)"
+        :aria-label="canRemoveChips ? `Remove ${chip.denomination} chip` : undefined"
       >
         <div
           v-for="i in chip.count"
@@ -55,8 +58,6 @@ function handleChipClick(denomination: number) {
             '--stack-offset': (i - 1) * 2,
             '--rotation': (i - 1) * 5
           }"
-          @click="handleChipClick(chip.denomination)"
-          :aria-label="canRemoveChips ? `Remove ${chip.denomination} chip` : undefined"
         >
           <img :src="`/chip-${chip.denomination}.svg`" alt="" class="chip-svg" />
           <div class="chip-inner">
@@ -203,6 +204,24 @@ function handleChipClick(denomination: number) {
 .chip-stack {
   position: relative;
   display: inline-block;
+  z-index: 1;
+  transition: z-index 0s;
+}
+
+.chip-stack.clickable-stack {
+  cursor: pointer;
+}
+
+.chip-stack.clickable-stack:hover {
+  z-index: 100;
+}
+
+.chip-stack.clickable-stack:hover .chip {
+  transform: translateY(calc(var(--stack-offset, 0) * -1px)) rotate(calc(var(--rotation, 0) * 1deg)) scale(1.05);
+}
+
+.chip-stack.clickable-stack:hover .chip:first-child {
+  transform: translateY(0) rotate(0deg) scale(1.1);
 }
 
 .chip {
@@ -217,6 +236,7 @@ function handleChipClick(denomination: number) {
   overflow: hidden;
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
   transition: all 0.2s ease;
+  pointer-events: none;
 }
 
 .chip:first-child {
@@ -224,14 +244,15 @@ function handleChipClick(denomination: number) {
 }
 
 .chip.clickable-chip {
-  cursor: pointer;
   pointer-events: auto;
 }
 
-.chip.clickable-chip:hover {
-  transform: translateY(calc(var(--stack-offset, 0) * -1px)) rotate(calc(var(--rotation, 0) * 1deg)) scale(1.1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
-  z-index: 100;
+.chip-stack.clickable-stack:active .chip {
+  transform: translateY(calc(var(--stack-offset, 0) * -1px)) rotate(calc(var(--rotation, 0) * 1deg)) scale(1.02);
+}
+
+.chip-stack.clickable-stack:active .chip:first-child {
+  transform: translateY(0) rotate(0deg) scale(1.05);
 }
 
 .chip.clickable-chip:active {

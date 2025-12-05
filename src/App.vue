@@ -388,7 +388,7 @@ main {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  padding: 0.5rem;
+  padding: 0.3rem;
   min-height: fit-content;
 }
 

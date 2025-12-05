@@ -24,19 +24,19 @@ import { canDoubleDown, canSplit, canTakeInsurance, canSurrender, canPlayActions
 .action-buttons {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
+  gap: 0.75rem;
   width: 100%;
-  max-width: 35rem;
+  max-width: 30rem;
   margin: 0 auto;
 }
 
 .action-btn {
-  padding: 1.25rem 1.75rem;
+  padding: 0.9rem 1.2rem;
   background: var(--color-gold);
   color: var(--color-black);
   border: none;
   border-radius: 0.5rem;
-  font-size: 2.2rem;
+  font-size: 1.6rem;
   font-variation-settings: 'wght' 700;
   text-transform: uppercase;
   cursor: pointer;

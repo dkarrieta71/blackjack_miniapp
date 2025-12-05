@@ -154,6 +154,10 @@ export const canPlayActions = computed(() => {
   // Must have cards dealt (at least 2 cards for player and dealer)
   if (playerHand.cards.length === 0) return false
   if (dealer.value.hands[0].cards.length === 0) return false
+  // Cannot play actions if dealer has blackjack and hole card is revealed
+  if (state.showDealerHoleCard && dealerHasBlackjack.value) return false
+  // Cannot play actions if hand already has a result
+  if (playerHand.result) return false
   return true
 })
 
@@ -601,6 +605,10 @@ function trackMatchBet(action: string, handValue: number) {
 
 /** Deal one more card to the active hand, and check for 21 or a bust. */
 export async function hit() {
+  // Prevent hitting if dealer has blackjack and hole card is revealed
+  if (state.showDealerHoleCard && dealerHasBlackjack.value) return
+  // Prevent hitting if hand already has a result
+  if (state.activeHand?.result) return
   state.isDealing = true
   const handValue = state.activeHand!.total
   state.activeHand!.cards.push(drawCard()!)
@@ -644,6 +652,8 @@ async function checkForBust(hand: Hand): Promise<boolean> {
 /** Split the active hand into two hands, and restart the player's turn. */
 export async function split(): Promise<void> {
   if (!canSplit.value) return
+  // Prevent splitting if dealer has blackjack and hole card is revealed
+  if (state.showDealerHoleCard && dealerHasBlackjack.value) return
   state.isDealing = true
   const handValue = state.activeHand!.total
   trackMatchBet('split', handValue)
@@ -665,6 +675,8 @@ export async function split(): Promise<void> {
 /** Double the bet for the active hand, and hit only once. */
 export async function doubleDown(): Promise<void> {
   if (!canDoubleDown.value) return
+  // Prevent doubling if dealer has blackjack and hole card is revealed
+  if (state.showDealerHoleCard && dealerHasBlackjack.value) return
   const handValue = state.activeHand!.total
   trackMatchBet('double', handValue)
   await placeBet(state.activePlayer!, state.activeHand!, state.activeHand!.bet)
@@ -715,10 +727,22 @@ async function determineResults() {
     if (player.isDealer) continue
     for (const hand of player.hands) {
       if (hand.result) continue
-      if (dealerTotal.value > 21) hand.result = 'win'
-      else if (dealerTotal.value === hand.total) hand.result = 'push'
-      else if (dealerTotal.value < hand.total) hand.result = 'win'
-      else hand.result = 'lose'
+      // If dealer has blackjack, player loses unless they also have blackjack (push)
+      if (dealerHasBlackjack.value) {
+        if (hand.isBlackjack) {
+          hand.result = 'push'
+        } else {
+          hand.result = 'lose'
+        }
+      } else if (dealerTotal.value > 21) {
+        hand.result = 'win'
+      } else if (dealerTotal.value === hand.total) {
+        hand.result = 'push'
+      } else if (dealerTotal.value < hand.total) {
+        hand.result = 'win'
+      } else {
+        hand.result = 'lose'
+      }
       playSoundForResult(hand.result)
       await sleep()
     }

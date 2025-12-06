@@ -66,6 +66,7 @@ const chipRows = computed(() => {
 }
 
 .chip-row {
+  z-index: 100;
   display: flex;
   gap: 0.5rem;
   justify-content: flex-start;

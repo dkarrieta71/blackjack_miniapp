@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick, onMounted } from 'vue'
 import { state, placeBet, startRound, chipState, chipsToAmount, setChipsFromAmount, resetChips, xpState } from '@/store'
 import { MINIMUM_BET } from '@/store'
 
@@ -12,6 +12,20 @@ const updatingFromChips = ref(false)
 // Track if we're resetting (to prevent chip updates during reset)
 const isResetting = ref(false)
 
+// Initialize chips to MINIMUM_BET on mount if no bet is placed
+onMounted(() => {
+  if (currentHand.value.bet === 0) {
+    const chipAmount = chipsToAmount(chipState.chips)
+    if (chipAmount === 0) {
+      updatingFromChips.value = true
+      setChipsFromAmount(MINIMUM_BET)
+      nextTick(() => {
+        updatingFromChips.value = false
+      })
+    }
+  }
+})
+
 // Reset bet amount when a new round starts
 watch(() => currentHand.value.bet, (newBet) => {
   if (newBet === 0) {
@@ -22,6 +36,12 @@ watch(() => currentHand.value.bet, (newBet) => {
     nextTick(() => {
       setTimeout(() => {
         isResetting.value = false
+        // Set chips to show MINIMUM_BET after reset
+        updatingFromChips.value = true
+        setChipsFromAmount(MINIMUM_BET)
+        nextTick(() => {
+          updatingFromChips.value = false
+        })
       }, 100)
     })
   }

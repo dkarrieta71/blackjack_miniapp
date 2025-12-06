@@ -375,6 +375,8 @@ main {
 }
 
 .chip-section {
+  position: absolute;
+  bottom: 25%;
   display: flex;
   align-items: center;
   justify-content: flex-start;

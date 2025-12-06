@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted } from 'vue'
-import { state, placeBet, startRound, chipState, chipsToAmount, setChipsFromAmount, resetChips, xpState } from '@/store'
+import { state, placeBet, startRound, chipState, chipsToAmount, setChipsFromAmount, xpState } from '@/store'
 import { MINIMUM_BET } from '@/store'
 
 const betAmount = ref(MINIMUM_BET)
@@ -31,18 +31,21 @@ watch(() => currentHand.value.bet, (newBet) => {
   if (newBet === 0) {
     isResetting.value = true
     betAmount.value = MINIMUM_BET
-    resetChips()
-    // Don't update chips from betAmount during reset - wait a bit
+    // Don't reset chips here - playRound() handles that
+    // Just wait a bit and then set chips to MINIMUM_BET if they're 0
     nextTick(() => {
       setTimeout(() => {
         isResetting.value = false
-        // Set chips to show MINIMUM_BET after reset
-        updatingFromChips.value = true
-        setChipsFromAmount(MINIMUM_BET)
-        nextTick(() => {
-          updatingFromChips.value = false
-        })
-      }, 100)
+        // Set chips to show MINIMUM_BET if they're still 0 (playRound might have reset them)
+        const chipAmount = chipsToAmount(chipState.chips)
+        if (chipAmount === 0) {
+          updatingFromChips.value = true
+          setChipsFromAmount(MINIMUM_BET)
+          nextTick(() => {
+            updatingFromChips.value = false
+          })
+        }
+      }, 150)
     })
   }
 })
@@ -65,6 +68,21 @@ watch(betAmount, (newAmount) => {
     nextTick(() => {
       updatingFromChips.value = false
     })
+  }
+})
+
+// Watch for when XP notification finishes and ensure chips are set to MINIMUM_BET
+watch(() => xpState.showXPNotification, (isShowing) => {
+  if (!isShowing && currentHand.value.bet === 0 && !isResetting.value) {
+    // XP notification just finished, check if chips need to be set
+    const chipAmount = chipsToAmount(chipState.chips)
+    if (chipAmount === 0) {
+      updatingFromChips.value = true
+      setChipsFromAmount(MINIMUM_BET)
+      nextTick(() => {
+        updatingFromChips.value = false
+      })
+    }
   }
 })
 

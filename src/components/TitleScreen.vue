@@ -36,6 +36,7 @@ function startGame() {
 
 <style scoped>
 .title-screen {
+  z-index: 101;
   position: absolute;
   inset: 0;
   overflow: hidden;

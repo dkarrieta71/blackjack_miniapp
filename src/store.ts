@@ -349,9 +349,13 @@ export async function playRound() {
     // Wait for XP notification to finish before resetting chips
     setTimeout(() => {
       resetChips() // Reset chips for new round
+      // Set chips to MINIMUM_BET after reset
+      setChipsFromAmount(MINIMUM_BET)
     }, 3000) // 2.5s notification + 0.4s animation + buffer
   } else {
     resetChips() // Reset chips for new round
+    // Set chips to MINIMUM_BET after reset
+    setChipsFromAmount(MINIMUM_BET)
   }
   // Wait for user to place bet via BetControls component
 }

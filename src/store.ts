@@ -922,7 +922,7 @@ async function collectWinnings() {
       hand.insurance = 0
     }
   }
-  await sleep(300)
+  // await sleep(300)
 }
 
 /** Reset all hands to an initial state. */

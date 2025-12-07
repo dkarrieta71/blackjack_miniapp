@@ -362,6 +362,9 @@ export async function startRound() {
   if (state.players[0].hands[0].bet === 0) return
   state.isDealing = true
   state.insuranceOffered = false
+
+  chipState.showAfterXP = false
+
   await dealRound()
   // Check if dealer's up card is an Ace - offer insurance
   const dealerUpCard = dealer.value.hands[0].cards[1]
@@ -1036,7 +1039,7 @@ export function refreshXPInfo(result: 'win' | 'lose' | 'push', usedCredits: bool
     }, 400)
     // Hide chips after showing them for a short time, then reset for new round
     setTimeout(() => {
-      chipState.showAfterXP = false
+      //chipState.showAfterXP = false
       // Reset chips and set to MINIMUM_BET for new round
       resetChips()
       setChipsFromAmount(MINIMUM_BET)

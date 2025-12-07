@@ -17,7 +17,7 @@ const activeChips = computed(() => {
 // - XP notification is not showing, OR
 // - We should show chips after XP notification (showAfterXP)
 const hasChips = computed(() => {
-  const canShow = !xpState.showXPNotification || chipState.showAfterXP
+  const canShow = !xpState.showXPNotification && chipState.showAfterXP
   return activeChips.value.length > 0 && canShow
 })
 

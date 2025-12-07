@@ -65,8 +65,10 @@ export const CHIP_DENOMINATIONS = [1, 5, 10, 25, 50, 100] as const
 // Chip state - tracks how many of each chip denomination are in the bet
 export const chipState = reactive<{
   chips: Record<number, number> // denomination -> count
+  showAfterXP: boolean // Show chips after XP notification finishes
 }>({
   chips: {},
+  showAfterXP: false,
 })
 
 // Initialize chip state
@@ -344,19 +346,14 @@ export async function playRound() {
   state.isDealing = false
   state.insuranceOffered = false
   state.matchBets = [] // Reset match bets for new round
-  // Delay chip reset if XP notification is showing to preserve chip display during notification
-  if (xpState.showXPNotification) {
-    // Wait for XP notification to finish before resetting chips
-    setTimeout(() => {
-      resetChips() // Reset chips for new round
-      // Set chips to MINIMUM_BET after reset
-      setChipsFromAmount(MINIMUM_BET)
-    }, 3000) // 2.5s notification + 0.4s animation + buffer
-  } else {
+  // Don't reset chips here if XP notification is showing - chips will be reset after showing them post-XP
+  // If no XP notification, reset chips immediately
+  if (!xpState.showXPNotification) {
     resetChips() // Reset chips for new round
     // Set chips to MINIMUM_BET after reset
     setChipsFromAmount(MINIMUM_BET)
   }
+  // If XP notification is showing, chips will be preserved and shown after XP, then reset in refreshXPInfo
   // Wait for user to place bet via BetControls component
 }
 
@@ -922,7 +919,7 @@ async function collectWinnings() {
       hand.insurance = 0
     }
   }
-  // await sleep(300)
+  await sleep(300)
 }
 
 /** Reset all hands to an initial state. */
@@ -1028,13 +1025,22 @@ export function refreshXPInfo(result: 'win' | 'lose' | 'push', usedCredits: bool
   xpState.earnedXP = earnedXP
   xpState.showXPNotification = true
 
-  // Auto-hide notification after 3 seconds
+  // Auto-hide notification after 2.5 seconds, then show chips
   setTimeout(() => {
     xpState.showXPNotification = false
+    // Show chips after XP notification disappears
+    chipState.showAfterXP = true
     // Clear earned XP after animation completes
     setTimeout(() => {
       xpState.earnedXP = null
     }, 400)
+    // Hide chips after showing them for a short time, then reset for new round
+    setTimeout(() => {
+      chipState.showAfterXP = false
+      // Reset chips and set to MINIMUM_BET for new round
+      resetChips()
+      setChipsFromAmount(MINIMUM_BET)
+    }, 1500) // Show chips for 1.5 seconds
   }, 2500)
 
   return earnedXP

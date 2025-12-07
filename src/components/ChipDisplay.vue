@@ -13,9 +13,11 @@ const activeChips = computed(() => {
 })
 
 // Check if there are any chips to display
-// Show chips when they exist and XP notification is not showing
+// Show chips when they exist and:
+// - XP notification is not showing, OR
+// - We should show chips after XP notification (showAfterXP)
 const hasChips = computed(() => {
-  const canShow = !xpState.showXPNotification
+  const canShow = !xpState.showXPNotification || chipState.showAfterXP
   return activeChips.value.length > 0 && canShow
 })
 
@@ -25,10 +27,10 @@ const hasBet = computed(() => {
   return (playerHand?.bet ?? 0) > 0
 })
 
-// Check if chips can be removed (same conditions as adding - no bet placed, not dealing)
+// Check if chips can be removed (same conditions as adding - no bet placed, not dealing, and not showing after XP)
 const canRemoveChips = computed(() => {
   const playerHand = state.players[0]?.hands[0]
-  return !state.isDealing && (playerHand?.bet ?? 0) === 0
+  return !state.isDealing && (playerHand?.bet ?? 0) === 0 && !chipState.showAfterXP
 })
 
 function handleChipClick(denomination: number) {

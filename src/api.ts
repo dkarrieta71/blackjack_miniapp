@@ -104,6 +104,12 @@ export interface XPRedemptionResponse {
   playthroughRequired: number;
 }
 
+export interface BonusCreditsRedemptionResponse {
+  bonusCreditsRedeemed: number;
+  newBonusCreditsBalance: number;
+  newRedeemableBonusCredits: number;
+}
+
 /**
  * Fetch user information from the backend
  * @param telegramId - Telegram user ID
@@ -335,6 +341,46 @@ export async function redeemXP(
     return data
   } catch (error) {
     console.error('Error redeeming XP:', error)
+    throw error
+  }
+}
+
+/**
+ * Redeem bonus credits after playthrough is complete
+ * @param telegramId - Telegram user ID
+ * @param initData - Telegram Web App init data for authentication (optional)
+ * @returns Redemption details
+ */
+export async function redeemBonusCredits(
+  telegramId: number,
+  initData?: string
+): Promise<BonusCreditsRedemptionResponse> {
+  try {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    }
+
+    if (initData) {
+      headers['X-Telegram-Init-Data'] = initData
+    }
+
+    const response = await fetch(`${API_BASE_URL}/api/bonus/redeem`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        telegramId,
+      }),
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(errorData.error || `Failed to redeem bonus credits: ${response.statusText}`)
+    }
+
+    const { data } = await response.json()
+    return data
+  } catch (error) {
+    console.error('Error redeeming bonus credits:', error)
     throw error
   }
 }

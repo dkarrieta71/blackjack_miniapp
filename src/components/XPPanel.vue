@@ -22,7 +22,7 @@
       </div>
       <div class="xp-panel-content">
         <XPProgressBar :xp-info="xpState.xpInfo" />
-        <PlaythroughProgress :xp-info="xpState.xpInfo" />
+        <PlaythroughProgress :xp-info="xpState.xpInfo" @redeemed="handleRedeemed" />
         <XPRedemption :xp-info="xpState.xpInfo" @redeemed="handleRedeemed" />
       </div>
     </div>

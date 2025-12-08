@@ -1,14 +1,14 @@
 <template>
   <div class="playthrough-container" v-if="shouldShow">
     <div class="playthrough-header">
-      <div class="bonus-credits-label">BONUS CREDITS</div>
+      <div class="bonus-credits-label">Current Batch Bonus Credit</div>
       <div class="bonus-credits-amount">
         ${{ props.xpInfo ? props.xpInfo.bonusCreditsBalance.toFixed(2) : '0.00' }}
       </div>
     </div>
-    <div class="balance-clarification">
+    <!-- <div class="balance-clarification">
       Current batch balance
-    </div>
+    </div> -->
     <div
       class="playthrough-status"
       :class="{ complete: props.xpInfo?.isPlaythroughComplete }"
@@ -223,7 +223,7 @@ async function handleRedeem() {
 
 .redeemable-notice {
   color: #4ade80;
-  font-size: 1.4rem;
+  font-size: 1.6rem;
   text-align: center;
   font-variation-settings: 'wght' 600;
   padding: 0.5rem;
@@ -309,7 +309,7 @@ async function handleRedeem() {
   }
 
   .redeemable-notice {
-    font-size: 1.3rem;
+    font-size: 1.6rem;
   }
 
   .redeem-button {

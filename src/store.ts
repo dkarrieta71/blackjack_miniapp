@@ -68,7 +68,7 @@ export const chipState = reactive<{
   showAfterXP: boolean // Show chips after XP notification finishes
 }>({
   chips: {},
-  showAfterXP: false,
+  showAfterXP: true,
 })
 
 // Initialize chip state

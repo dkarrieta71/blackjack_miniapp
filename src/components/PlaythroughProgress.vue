@@ -1,51 +1,57 @@
 <template>
-  <div class="playthrough-container" v-if="shouldShow">
-    <div class="playthrough-header">
-      <div class="bonus-credits-label">Current Batch Bonus Credit</div>
-      <div class="bonus-credits-amount">
-        ${{ props.xpInfo ? props.xpInfo.bonusCreditsBalance.toFixed(2) : '0.00' }}
+  <div class="playthrough-container">
+    <div v-if="shouldShow">
+      <div class="playthrough-header">
+        <div class="bonus-credits-label">Current Batch Bonus Credit</div>
+        <div class="bonus-credits-amount">
+          ${{ props.xpInfo ? props.xpInfo.bonusCreditsBalance.toFixed(2) : '0.00' }}
+        </div>
       </div>
-    </div>
-    <!-- <div class="balance-clarification">
-      Current batch balance
-    </div> -->
-    <div
-      class="playthrough-status"
-      :class="{ complete: props.xpInfo?.isPlaythroughComplete }"
-    >
-      {{ statusText }}
-    </div>
-    <div class="progress-bar-wrapper">
+      <!-- <div class="balance-clarification">
+        Current batch balance
+      </div> -->
       <div
-        class="progress-bar"
+        class="playthrough-status"
         :class="{ complete: props.xpInfo?.isPlaythroughComplete }"
-        :style="{ width: `${props.xpInfo?.playthroughPercentage ?? 0}%` }"
-      ></div>
-    </div>
-    <div class="playthrough-details">
-      <span class="progress-text">
-        ${{ props.xpInfo?.playthroughProgress.toFixed(2) ?? '0.00' }} / ${{ props.xpInfo?.playthroughRequired.toFixed(2) ?? '0.00' }}
-      </span>
-      <span class="percentage-text">{{ Math.round(props.xpInfo?.playthroughPercentage ?? 0) }}%</span>
-    </div>
-    <div class="redeemable-section" v-if="(props.xpInfo?.redeemableBonusCredits ?? 0) > 0 || successMessage || errorMessage">
-      <div class="redeemable-notice" v-if="(props.xpInfo?.redeemableBonusCredits ?? 0) > 0">
-        ✓ ${{ props.xpInfo?.redeemableBonusCredits.toFixed(2) ?? '0.00' }} available to redeem
-      </div>
-      <button
-        v-if="(props.xpInfo?.redeemableBonusCredits ?? 0) > 0"
-        @click="handleRedeem"
-        :disabled="isRedeeming"
-        class="redeem-button"
       >
-        {{ isRedeeming ? 'Redeeming...' : 'Redeem' }}
-      </button>
-      <div class="error-message" v-if="errorMessage">
-        {{ errorMessage }}
+        {{ statusText }}
       </div>
-      <div class="success-message" v-if="successMessage">
-        {{ successMessage }}
+      <div class="progress-bar-wrapper">
+        <div
+          class="progress-bar"
+          :class="{ complete: props.xpInfo?.isPlaythroughComplete }"
+          :style="{ width: `${props.xpInfo?.playthroughPercentage ?? 0}%` }"
+        ></div>
       </div>
+      <div class="playthrough-details">
+        <span class="progress-text">
+          ${{ props.xpInfo?.playthroughProgress.toFixed(2) ?? '0.00' }} / ${{ props.xpInfo?.playthroughRequired.toFixed(2) ?? '0.00' }}
+        </span>
+        <span class="percentage-text">{{ Math.round(props.xpInfo?.playthroughPercentage ?? 0) }}%</span>
+      </div>
+      <div class="redeemable-section" v-if="(props.xpInfo?.redeemableBonusCredits ?? 0) > 0 || successMessage || errorMessage">
+        <div class="redeemable-notice" v-if="(props.xpInfo?.redeemableBonusCredits ?? 0) > 0">
+          ✓ ${{ props.xpInfo?.redeemableBonusCredits.toFixed(2) ?? '0.00' }} available to redeem
+        </div>
+        <button
+          v-if="(props.xpInfo?.redeemableBonusCredits ?? 0) > 0"
+          @click="handleRedeem"
+          :disabled="isRedeeming"
+          class="redeem-button"
+        >
+          {{ isRedeeming ? 'Redeeming...' : 'Redeem' }}
+        </button>
+        <div class="error-message" v-if="errorMessage">
+          {{ errorMessage }}
+        </div>
+        <div class="success-message" v-if="successMessage">
+          {{ successMessage }}
+        </div>
+      </div>
+    </div>
+    <div v-else class="no-bonus-message">
+      <div class="no-bonus-icon">ℹ️</div>
+      <div class="no-bonus-text">Currently no bonus credits available for playthrough progress to redeem</div>
     </div>
   </div>
 </template>
@@ -289,6 +295,29 @@ async function handleRedeem() {
   border-radius: 0.25rem;
 }
 
+.no-bonus-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 2rem 1rem;
+  text-align: center;
+}
+
+.no-bonus-icon {
+  font-size: 3rem;
+  opacity: 0.7;
+}
+
+.no-bonus-text {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1.6rem;
+  font-variation-settings: 'wght' 600;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  line-height: 1.4;
+}
+
 @media (max-width: 768px) {
   .playthrough-container {
     padding: 0.75rem;
@@ -327,6 +356,18 @@ async function handleRedeem() {
   .error-message,
   .success-message {
     font-size: 1.2rem;
+  }
+
+  .no-bonus-message {
+    padding: 1.5rem 0.75rem;
+  }
+
+  .no-bonus-icon {
+    font-size: 2.5rem;
+  }
+
+  .no-bonus-text {
+    font-size: 1.4rem;
   }
 }
 </style>

@@ -107,7 +107,7 @@ function handleInputBlur() {
 
 watch(xpAmount, () => {
   errorMessage.value = ''
-  successMessage.value = ''
+  // Don't clear successMessage here - it should persist after redemption
 })
 
 async function handleRedeem() {
@@ -134,9 +134,9 @@ async function handleRedeem() {
 
     // Emit event to refresh XP data
     emit('redeemed')
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error redeeming XP:', error)
-    errorMessage.value = error.message || 'Failed to redeem XP. Please try again.'
+    errorMessage.value = error instanceof Error ? error.message : 'Failed to redeem XP. Please try again.'
     playSound(Sounds.Bust)
   } finally {
     isRedeeming.value = false

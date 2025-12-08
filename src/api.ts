@@ -105,9 +105,11 @@ export interface XPRedemptionResponse {
 }
 
 export interface BonusCreditsRedemptionResponse {
+  success: boolean;
   bonusCreditsRedeemed: number;
-  newBonusCreditsBalance: number;
-  newRedeemableBonusCredits: number;
+  realBalanceAdded: number;
+  newBonusCredits: number;
+  newRealBalance: number;
 }
 
 /**
@@ -377,8 +379,9 @@ export async function redeemBonusCredits(
       throw new Error(errorData.error || `Failed to redeem bonus credits: ${response.statusText}`)
     }
 
-    const { data } = await response.json()
-    return data
+    const responseData = await response.json()
+    // Handle nested response structure: { success: true, data: { ... } }
+    return responseData.data || responseData
   } catch (error) {
     console.error('Error redeeming bonus credits:', error)
     throw error

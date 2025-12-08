@@ -28,11 +28,12 @@
       </span>
       <span class="percentage-text">{{ Math.round(props.xpInfo?.playthroughPercentage ?? 0) }}%</span>
     </div>
-    <div class="redeemable-section" v-if="(props.xpInfo?.redeemableBonusCredits ?? 0) > 0">
-      <div class="redeemable-notice">
+    <div class="redeemable-section" v-if="(props.xpInfo?.redeemableBonusCredits ?? 0) > 0 || successMessage || errorMessage">
+      <div class="redeemable-notice" v-if="(props.xpInfo?.redeemableBonusCredits ?? 0) > 0">
         ✓ ${{ props.xpInfo?.redeemableBonusCredits.toFixed(2) ?? '0.00' }} available to redeem
       </div>
       <button
+        v-if="(props.xpInfo?.redeemableBonusCredits ?? 0) > 0"
         @click="handleRedeem"
         :disabled="isRedeeming"
         class="redeem-button"
@@ -98,7 +99,13 @@ async function handleRedeem() {
     const result = await redeemBonusCredits(telegramId, initData)
 
     playSound(Sounds.Win)
-    successMessage.value = `Successfully redeemed $${result.bonusCreditsRedeemed.toFixed(2)} bonus credits!`
+    successMessage.value = `Successfully redeemed $${result.bonusCreditsRedeemed.toFixed(2)} bonus credits to $${result.realBalanceAdded.toFixed(2)} real balance!`
+
+    // Update balances in store
+    const { balances, updatePlayerBank } = await import('@/store')
+    balances.realBalance = result.newRealBalance
+    // Update player bank to reflect the new real balance
+    updatePlayerBank()
 
     // Refresh XP info after redemption
     await fetchXPInfo(true)

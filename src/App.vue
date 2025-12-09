@@ -16,6 +16,7 @@ import BalanceToggle from '@/components/BalanceToggle.vue'
 import XPNotification from '@/components/XPNotification.vue'
 import ChipSelector from '@/components/ChipSelector.vue'
 import ChipDisplay from '@/components/ChipDisplay.vue'
+import ChipDisplay1 from '@/components/ChipDisplay1.vue'
 import { getTelegramUserId, getTelegramWebApp } from '@/telegram'
 import { getUserInfo } from '@/api'
 
@@ -128,7 +129,7 @@ function onClickCapture(e: MouseEvent) {
     <!-- Chip Selector Section (above divider) -->
     <section class="chip-section">
       <ChipSelector />
-      <ChipDisplay v-if="hasBet" />
+      <ChipDisplay1 v-if="hasBet" />
     </section>
 
     <!-- Divider -->

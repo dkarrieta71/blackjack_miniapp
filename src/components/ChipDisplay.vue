@@ -30,7 +30,7 @@ const hasBet = computed(() => {
 // Check if chips can be removed (same conditions as adding - no bet placed, not dealing, and not showing after XP)
 const canRemoveChips = computed(() => {
   const playerHand = state.players[0]?.hands[0]
-  return !state.isDealing && (playerHand?.bet ?? 0) === 0 && !chipState.showAfterXP
+  return !state.isDealing && (playerHand?.bet ?? 0) === 0
 })
 
 function handleChipClick(denomination: number) {

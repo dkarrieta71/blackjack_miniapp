@@ -23,7 +23,7 @@
       <div class="xp-panel-content">
         <XPProgressBar :xp-info="xpState.xpInfo" />
         <PlaythroughProgress :xp-info="xpState.xpInfo" @redeemed="handleRedeemed" />
-        <XPRedemption :xp-info="xpState.xpInfo" @redeemed="handleRedeemed" />
+        <!-- <XPRedemption :xp-info="xpState.xpInfo" @redeemed="handleRedeemed" /> -->
       </div>
     </div>
   </div>
@@ -34,7 +34,7 @@ import { watch } from 'vue'
 import { xpState, fetchXPInfo } from '@/store'
 import XPProgressBar from './XPProgressBar.vue'
 import PlaythroughProgress from './PlaythroughProgress.vue'
-import XPRedemption from './XPRedemption.vue'
+// import XPRedemption from './XPRedemption.vue'
 
 const props = defineProps<{
   isOpen: boolean

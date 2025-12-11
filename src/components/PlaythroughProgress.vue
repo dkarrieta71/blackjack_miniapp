@@ -59,9 +59,9 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import type { XPInfo } from '@/api'
-import { redeemBonusCredits } from '@/api'
+import { redeemBonusCredits, getUserInfo } from '@/api'
 import { getTelegramUserId, getTelegramWebApp } from '@/telegram'
-import { fetchXPInfo } from '@/store'
+import { fetchXPInfo, setInitialBalances } from '@/store'
 import { playSound, Sounds } from '@/sound'
 
 const props = defineProps<{
@@ -107,13 +107,29 @@ async function handleRedeem() {
     playSound(Sounds.Win)
     successMessage.value = `Successfully redeemed $${result.bonusCreditsRedeemed.toFixed(2)} bonus credits to $${result.realBalanceAdded.toFixed(2)} real balance!`
 
-    // Update balances in store
-    const { balances, updatePlayerBank } = await import('@/store')
-    balances.realBalance = result.newRealBalance
-    // Update player bank to reflect the new real balance
-    updatePlayerBank()
+    // Fetch updated user info to get all updated balances (real, bonus, bonus credit balance)
+    try {
+      const userInfo = await getUserInfo(telegramId, initData)
+      if (userInfo && userInfo.balance &&
+          typeof userInfo.balance.creditBalance === 'number' &&
+          typeof userInfo.balance.realBalance === 'number') {
+        // Update all balances from server response
+        setInitialBalances(userInfo.balance.creditBalance, userInfo.balance.realBalance)
+      } else {
+        // Fallback: use the result from redemption response
+        const { balances, updatePlayerBank } = await import('@/store')
+        balances.realBalance = result.newRealBalance
+        updatePlayerBank()
+      }
+    } catch (error) {
+      console.error('Failed to fetch updated user info after redemption:', error)
+      // Fallback: use the result from redemption response
+      const { balances, updatePlayerBank } = await import('@/store')
+      balances.realBalance = result.newRealBalance
+      updatePlayerBank()
+    }
 
-    // Refresh XP info after redemption
+    // Refresh XP info after redemption (this also updates bonus credit balance)
     await fetchXPInfo(true)
     emit('redeemed')
 

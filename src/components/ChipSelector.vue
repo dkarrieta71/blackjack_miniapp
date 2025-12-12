@@ -26,11 +26,11 @@ function handleChipClick(denomination: number) {
   playSound(Sounds.Click)
 }
 
-// Arrange chips in rows of 3
+// Arrange chips in rows of 4
 const chipRows = computed(() => {
   const rows: number[][] = []
-  for (let i = 0; i < CHIP_DENOMINATIONS.length; i += 3) {
-    rows.push(CHIP_DENOMINATIONS.slice(i, i + 3))
+  for (let i = 0; i < CHIP_DENOMINATIONS.length; i += 4) {
+    rows.push(CHIP_DENOMINATIONS.slice(i, i + 4))
   }
   return rows
 })

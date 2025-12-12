@@ -3,7 +3,7 @@ import { ref, computed, watch, nextTick, onMounted } from 'vue'
 import { state, placeBet, startRound, chipState, chipsToAmount, setChipsFromAmount, xpState } from '@/store'
 import { MINIMUM_BET, MAXIMUM_BET } from '@/store'
 
-const betAmount = ref(MINIMUM_BET)
+const betAmount = ref(0)
 const player = computed(() => state.players[0])
 const currentHand = computed(() => player.value.hands[0])
 const maxBet = computed(() => Math.min(player.value.bank, MAXIMUM_BET))
@@ -13,39 +13,21 @@ const updatingFromChips = ref(false)
 // Track if we're resetting (to prevent chip updates during reset)
 const isResetting = ref(false)
 
-// Initialize chips to MINIMUM_BET on mount if no bet is placed
+// Initialize on mount - don't auto-set chips or bet amount
 onMounted(() => {
-  if (currentHand.value.bet === 0) {
-    const chipAmount = chipsToAmount(chipState.chips)
-    if (chipAmount === 0) {
-      updatingFromChips.value = true
-      setChipsFromAmount(MINIMUM_BET)
-      nextTick(() => {
-        updatingFromChips.value = false
-      })
-    }
-  }
+  // Chips and bet amount start at 0, player must set them manually
 })
 
 // Reset bet amount when a new round starts
 watch(() => currentHand.value.bet, (newBet) => {
   if (newBet === 0) {
     isResetting.value = true
-    betAmount.value = MINIMUM_BET
+    betAmount.value = 0
     // Don't reset chips here - playRound() handles that
-    // Just wait a bit and then set chips to MINIMUM_BET if they're 0
+    // Chips will be reset to 0, player must set them manually
     nextTick(() => {
       setTimeout(() => {
         isResetting.value = false
-        // Set chips to show MINIMUM_BET if they're still 0 (playRound might have reset them)
-        const chipAmount = chipsToAmount(chipState.chips)
-        if (chipAmount === 0) {
-          updatingFromChips.value = true
-          setChipsFromAmount(MINIMUM_BET)
-          nextTick(() => {
-            updatingFromChips.value = false
-          })
-        }
       }, 150)
     })
   }
@@ -56,20 +38,21 @@ watch(() => chipState.chips, () => {
   if (!updatingFromChips.value && !isResetting.value) {
     const chipAmount = chipsToAmount(chipState.chips)
     if (chipAmount !== betAmount.value) {
-      betAmount.value = Math.max(MINIMUM_BET, Math.min(chipAmount, maxBet.value))
+      betAmount.value = Math.min(chipAmount, maxBet.value)
     }
   }
 }, { deep: true })
 
 // Watch bet amount changes and update chips (only if not resetting, XP notification is not showing, and no bet is placed yet)
 watch(betAmount, (newAmount) => {
-  // Clamp bet amount to valid range
+  // Clamp bet amount to valid range (allow 0, but cap at maxBet)
   if (newAmount > maxBet.value) {
     betAmount.value = maxBet.value
     return
   }
-  if (newAmount < MINIMUM_BET) {
-    betAmount.value = MINIMUM_BET
+  // Allow 0, don't force MINIMUM_BET here - validation happens when placing bet
+  if (newAmount < 0) {
+    betAmount.value = 0
     return
   }
 
@@ -82,23 +65,16 @@ watch(betAmount, (newAmount) => {
   }
 })
 
-// Watch for when XP notification finishes and ensure chips are set to MINIMUM_BET
+// Watch for when XP notification finishes - chips should already be reset to 0
 watch(() => xpState.showXPNotification, (isShowing) => {
   if (!isShowing && currentHand.value.bet === 0 && !isResetting.value) {
-    // XP notification just finished, check if chips need to be set
-    const chipAmount = chipsToAmount(chipState.chips)
-    if (chipAmount === 0) {
-      updatingFromChips.value = true
-      setChipsFromAmount(MINIMUM_BET)
-      nextTick(() => {
-        updatingFromChips.value = false
-      })
-    }
+    // XP notification just finished, chips should be at 0, player must set them manually
+    // No need to auto-set chips
   }
 })
 
 function setBetAmount(amount: number) {
-  betAmount.value = Math.max(MINIMUM_BET, Math.min(amount, maxBet.value))
+  betAmount.value = Math.max(0, Math.min(amount, maxBet.value))
 }
 
 function halveBet() {
@@ -127,7 +103,7 @@ async function placeBetHandler() {
           id="bet-amount"
           type="number"
           v-model.number="betAmount"
-          :min="MINIMUM_BET"
+          :min="0"
           :max="maxBet"
           :disabled="state.isDealing || currentHand.bet > 0"
         />
@@ -135,7 +111,7 @@ async function placeBetHandler() {
           <button
             class="multiplier-btn"
             @click="halveBet"
-            :disabled="state.isDealing || currentHand.bet > 0 || betAmount <= MINIMUM_BET"
+            :disabled="state.isDealing || currentHand.bet > 0 || betAmount <= 0"
           >
             1/2
           </button>

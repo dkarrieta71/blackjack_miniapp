@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { state, chipState, CHIP_DENOMINATIONS, addChip, chipsToAmount } from '@/store'
+import { state, chipState, CHIP_DENOMINATIONS, addChip, chipsToAmount, MAXIMUM_BET } from '@/store'
 import { playSound, Sounds } from '@/sound'
 
 const player = computed(() => state.players[0])
@@ -17,9 +17,10 @@ function handleChipClick(denomination: number) {
 
   const currentAmount = chipsToAmount(chipState.chips)
   const newAmount = currentAmount + denomination
+  const maxBet = Math.min(player.value.bank, MAXIMUM_BET)
 
-  // Check if adding this chip would exceed bank
-  if (newAmount > player.value.bank) return
+  // Check if adding this chip would exceed bank or max bet
+  if (newAmount > maxBet) return
 
   addChip(denomination)
   playSound(Sounds.Click)
@@ -44,7 +45,7 @@ const chipRows = computed(() => {
         class="chip-button"
         :class="{ disabled: isDisabled }"
         @click="handleChipClick(denomination)"
-        :disabled="isDisabled || chipsToAmount(chipState.chips) + denomination > player.bank"
+        :disabled="isDisabled || chipsToAmount(chipState.chips) + denomination > Math.min(player.bank, MAXIMUM_BET)"
         :aria-label="`Add ${denomination} chip`"
       >
         <img :src="`/chip-${denomination}.svg`" alt="" class="chip-svg" />

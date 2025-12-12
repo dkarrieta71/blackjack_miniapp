@@ -8,6 +8,7 @@ import type { XPInfo } from './api'
 import { getTelegramUserId, getTelegramWebApp } from './telegram'
 
 export const MINIMUM_BET = 1
+export const MAXIMUM_BET = 10000
 export const DEFAULT_STARTING_BANK = 20
 const NUMBER_OF_DECKS = 6
 /** Reshuffle once less than 25% of the cards are left */
@@ -60,7 +61,7 @@ export const xpState = reactive<{
 })
 
 // Chip denominations
-export const CHIP_DENOMINATIONS = [1, 5, 10, 25, 50, 100] as const
+export const CHIP_DENOMINATIONS = [1, 5, 10, 25, 50, 100, 500, 1000] as const
 
 // Chip state - tracks how many of each chip denomination are in the bet
 export const chipState = reactive<{
@@ -470,6 +471,11 @@ async function dealRound() {
 
 /** Place a bet for the player. */
 export async function placeBet(player: Player, hand: Hand, amount: number) {
+  // Validate bet amount
+  if (amount < MINIMUM_BET || amount > MAXIMUM_BET) {
+    console.error(`Bet amount ${amount} is out of range (${MINIMUM_BET}-${MAXIMUM_BET})`)
+    return
+  }
   state.isDealing = true
   await nextTick()
   player.bank -= amount

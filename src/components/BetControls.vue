@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted } from 'vue'
 import { state, placeBet, startRound, chipState, chipsToAmount, setChipsFromAmount, xpState } from '@/store'
-import { MINIMUM_BET } from '@/store'
+import { MINIMUM_BET, MAXIMUM_BET } from '@/store'
 
 const betAmount = ref(MINIMUM_BET)
 const player = computed(() => state.players[0])
 const currentHand = computed(() => player.value.hands[0])
+const maxBet = computed(() => Math.min(player.value.bank, MAXIMUM_BET))
 
 // Track if we're updating from chips (to avoid circular updates)
 const updatingFromChips = ref(false)
@@ -55,13 +56,23 @@ watch(() => chipState.chips, () => {
   if (!updatingFromChips.value && !isResetting.value) {
     const chipAmount = chipsToAmount(chipState.chips)
     if (chipAmount !== betAmount.value) {
-      betAmount.value = Math.max(MINIMUM_BET, Math.min(chipAmount, player.value.bank))
+      betAmount.value = Math.max(MINIMUM_BET, Math.min(chipAmount, maxBet.value))
     }
   }
 }, { deep: true })
 
 // Watch bet amount changes and update chips (only if not resetting, XP notification is not showing, and no bet is placed yet)
 watch(betAmount, (newAmount) => {
+  // Clamp bet amount to valid range
+  if (newAmount > maxBet.value) {
+    betAmount.value = maxBet.value
+    return
+  }
+  if (newAmount < MINIMUM_BET) {
+    betAmount.value = MINIMUM_BET
+    return
+  }
+
   if (!updatingFromChips.value && !isResetting.value && !xpState.showXPNotification && currentHand.value.bet === 0) {
     updatingFromChips.value = true
     setChipsFromAmount(newAmount)
@@ -87,8 +98,7 @@ watch(() => xpState.showXPNotification, (isShowing) => {
 })
 
 function setBetAmount(amount: number) {
-  const maxBet = player.value.bank
-  betAmount.value = Math.max(MINIMUM_BET, Math.min(amount, maxBet))
+  betAmount.value = Math.max(MINIMUM_BET, Math.min(amount, maxBet.value))
 }
 
 function halveBet() {
@@ -101,7 +111,7 @@ function doubleBet() {
 
 async function placeBetHandler() {
   if (state.isDealing || currentHand.value.bet > 0) return
-  if (betAmount.value < MINIMUM_BET || betAmount.value > player.value.bank) return
+  if (betAmount.value < MINIMUM_BET || betAmount.value > maxBet.value) return
 
   await placeBet(player.value, currentHand.value, betAmount.value)
   await startRound()
@@ -118,7 +128,7 @@ async function placeBetHandler() {
           type="number"
           v-model.number="betAmount"
           :min="MINIMUM_BET"
-          :max="player.bank"
+          :max="maxBet"
           :disabled="state.isDealing || currentHand.bet > 0"
         />
         <div class="bet-multipliers">
@@ -132,7 +142,7 @@ async function placeBetHandler() {
           <button
             class="multiplier-btn"
             @click="doubleBet"
-            :disabled="state.isDealing || currentHand.bet > 0 || betAmount * 2 > player.bank"
+            :disabled="state.isDealing || currentHand.bet > 0 || betAmount * 2 > maxBet"
           >
             2x
           </button>
@@ -142,7 +152,7 @@ async function placeBetHandler() {
     <button
       class="bet-button"
       @click="placeBetHandler"
-      :disabled="state.isDealing || currentHand.bet > 0 || betAmount < MINIMUM_BET || betAmount > player.bank"
+      :disabled="state.isDealing || currentHand.bet > 0 || betAmount < MINIMUM_BET || betAmount > maxBet"
     >
       BET
     </button>

@@ -7,8 +7,8 @@
 </g>
 <g id="Objects">
 	<g>
-        <circle style="fill:#5c5a49;" cx="1100" cy="1100" r="858"/>   <!-- Outer circle: deep royal blue -->
-        <circle style="fill:#545146;" cx="1100" cy="1100" r="820"/>   <!-- Inner circle: gold -->
+        <circle style="fill:#f9c360d6;" cx="1100" cy="1100" r="858"/>   <!-- Outer circle: deep royal blue -->
+        <circle style="fill:#feb229;" cx="1100" cy="1100" r="820"/>   <!-- Inner circle: gold -->
 		<path style="fill:#FFFFFF;" d="M1100,554.22c-301.43,0-545.78,244.35-545.78,545.78s244.35,545.78,545.78,545.78
 			s545.78-244.35,545.78-545.78S1401.43,554.22,1100,554.22z M1100,1609.33c-281.3,0-509.33-228.03-509.33-509.33
 			S818.7,590.67,1100,590.67S1609.33,818.7,1609.33,1100S1381.3,1609.33,1100,1609.33z"/>

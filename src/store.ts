@@ -37,6 +37,7 @@ export const state = reactive<GameState>({
   matchBets: [],
   usedCredits: localStorage.getItem('usedCredits') !== 'false', // Default to credits, use stored preference
   hasGameStarted: false, // Track if user has clicked "Start Game" at least once
+  serverConnectionFailed: false, // Track if server connection failed
 })
 
 // Track both balances separately

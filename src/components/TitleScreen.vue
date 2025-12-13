@@ -26,6 +26,12 @@ function startGame() {
             {{ state.soundLoadProgress }}%
           </progress>
         </div>
+        <div v-else-if="state.serverConnectionFailed" class="error-container">
+          <p class="error-message">Cannot connect to server</p>
+          <button disabled class="disabled-button">
+            {{ state.isGameOver ? 'Play Again' : 'Start Game' }}
+          </button>
+        </div>
         <button v-else @click="startGame">
           {{ state.isGameOver ? 'Play Again' : 'Start Game' }}
         </button>
@@ -81,6 +87,26 @@ button {
   padding: 1.5rem 2.5rem;
   top: 150px;
   background-color: #ffa92e;
+}
+button:disabled,
+.disabled-button {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #666;
+}
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+.error-message {
+  color: var(--color-white);
+  font-size: 2rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin: 0;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
 }
 .progress-container {
   display: flex;

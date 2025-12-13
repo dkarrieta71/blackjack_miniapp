@@ -54,6 +54,8 @@ export type GameState = {
   usedCredits: boolean
   /** Whether the game has started (user clicked "Start Game" at least once) */
   hasGameStarted: boolean
+  /** Whether the server connection failed when fetching balances */
+  serverConnectionFailed: boolean
 }
 
 export class Hand {

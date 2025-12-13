@@ -41,9 +41,11 @@ onMounted(async () => {
           typeof userInfo.balance.creditBalance === 'number' &&
           typeof userInfo.balance.realBalance === 'number') {
         setInitialBalances(userInfo.balance.creditBalance, userInfo.balance.realBalance)
+        state.serverConnectionFailed = false // Connection succeeded
       } else {
         console.warn('Invalid user info received, using default balance')
         setInitialBalances(DEFAULT_STARTING_BANK, DEFAULT_STARTING_BANK)
+        state.serverConnectionFailed = true // Invalid data but connection worked
       }
 
       // Fetch XP info if available in userInfo, otherwise fetch separately
@@ -58,12 +60,15 @@ onMounted(async () => {
       }
     } catch (error) {
       console.error('Failed to load balance:', error)
-      // Use default balance if fetch fails
-      setInitialBalances(DEFAULT_STARTING_BANK, DEFAULT_STARTING_BANK)
+      // Mark server connection as failed
+      state.serverConnectionFailed = true
+      state.isLoadingBalance = false // Stop loading indicator
+      // Don't set default balance - user should see error message
     }
   } else {
     // Not in Telegram, use default balance
     setInitialBalances(DEFAULT_STARTING_BANK, DEFAULT_STARTING_BANK)
+    state.serverConnectionFailed = false // Not in Telegram, so no connection needed
   }
 })
 

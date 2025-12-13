@@ -168,6 +168,8 @@ export const canPlayActions = computed(() => {
   if (dealer.value.hands[0].cards.length === 0) return false
   // Cannot play actions if dealer has blackjack and hole card is revealed
   if (state.showDealerHoleCard && dealerHasBlackjack.value) return false
+  // Cannot play actions if dealer has 17-21 and hole card is revealed (dealer must stand)
+  if (state.showDealerHoleCard && dealerTotal.value >= 17 && dealerTotal.value <= 21) return false
   // Cannot play actions if hand already has a result
   if (playerHand.result) return false
   return true
@@ -527,6 +529,10 @@ export async function takeInsurance() {
   state.insuranceOffered = false
   await revealDealerHoleCard()
   if (dealerHasBlackjack.value) return endRound()
+  // If dealer has 17-21, dealer must stand, so automatically settle
+  if (dealerTotal.value >= 17 && dealerTotal.value <= 21) {
+    return endRound()
+  }
   playTurn(state.players[0])
 }
 
@@ -537,6 +543,10 @@ export async function declineInsurance() {
   // Check for dealer blackjack after declining insurance
   await revealDealerHoleCard()
   if (dealerHasBlackjack.value) return endRound()
+  // If dealer has 17-21, dealer must stand, so automatically settle
+  if (dealerTotal.value >= 17 && dealerTotal.value <= 21) {
+    return endRound()
+  }
   playTurn(state.players[0])
 }
 

@@ -261,7 +261,9 @@ export const canSurrender = computed(() => {
   if (!state.activeHand) return false
   if (!state.activePlayer || state.activePlayer.isDealer) return false
   // Surrender only available on initial two cards, first hand only
-  if (state.activeHand.cards.length !== 2) return false
+  // This check must come early to prevent surrender after any hit
+  const cardCount = state.activeHand.cards.length
+  if (cardCount !== 2) return false
   if (state.activePlayer.hands.length > 1) return false // Can't surrender split hands
   if (state.activeHand.isBlackjack) return false // Can't surrender blackjack
   if (state.activeHand.result) return false // Already has a result

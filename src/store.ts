@@ -200,7 +200,9 @@ export const canDoubleDown = computed(() => {
   if ((state.activePlayer.bank ?? 0) < (state.activeHand.bet ?? 0)) return false
 
   // Must have exactly 2 cards (cannot double after hitting)
-  if (state.activeHand.cards.length !== 2) return false
+  // This check must come first to prevent doubling after any hit
+  const cardCount = state.activeHand.cards.length
+  if (cardCount !== 2) return false
 
   // Must be first hand only (cannot double on split hands)
   if (state.activePlayer.hands.length > 1) return false

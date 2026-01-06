@@ -1,7 +1,7 @@
 // API service for backend communication
 // Note: Using relative URL /api/user/info which will be proxied by Vite or handled by the server
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://florentino-mithridatic-caressingly.ngrok-free.dev'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://bj365bot.com/'
 
 export interface UserBalance {
   creditBalance: number;

@@ -261,6 +261,8 @@ export const canSurrender = computed(() => {
   if (state.insuranceOffered) return false // Can't surrender during insurance offer
   if (!state.activeHand) return false
   if (!state.activePlayer || state.activePlayer.isDealer) return false
+  // Cannot surrender after insurance is taken (insurance is an action that makes surrender unavailable)
+  if (state.activeHand.insurance > 0) return false
   // Surrender only available on initial two cards, first hand only
   // This check must come early to prevent surrender after any hit
   const cardCount = state.activeHand.cards.length
@@ -934,6 +936,16 @@ async function collectWinnings() {
       gameResult = 'push'
     }
     refreshXPInfo(gameResult, state.usedCredits)
+
+    // Fetch updated XP from backend to ensure UI shows correct values
+    if (telegramId) {
+      // Delay slightly to ensure backend has processed the game result
+      setTimeout(() => {
+        fetchXPInfo(true).catch(err => {
+          console.error('Failed to fetch updated XP info:', err)
+        })
+      }, 500)
+    }
 
     // Reset hands after recording
     for (const hand of player.hands) {

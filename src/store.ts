@@ -291,35 +291,35 @@ export function setInitialBalances(creditBalance: number, realBalance: number) {
 
 /**
  * Update the player's bank based on the current usedCredits setting
- * If the selected balance is 0, automatically switch to the other balance type
+ * If the selected balance is insufficient (< MINIMUM_BET) or 0, automatically switch to the other balance type if it's sufficient
  */
 export function updatePlayerBank() {
   if (state.players[0]) {
     if (state.usedCredits) {
       // Using Bonus Credits
-      if (balances.creditBalance > 0) {
+      if (balances.creditBalance >= MINIMUM_BET) {
         state.players[0].bank = balances.creditBalance
-      } else if (balances.realBalance > 0) {
-        // Credit balance is 0, switch to Real Funds
+      } else if (balances.realBalance >= MINIMUM_BET) {
+        // Credit balance is insufficient, switch to Real Funds
         state.usedCredits = false
         localStorage.setItem('usedCredits', 'false')
         state.players[0].bank = balances.realBalance
       } else {
-        // Both are 0
-        state.players[0].bank = 0
+        // Both are insufficient - use whichever is higher (or 0 if both are 0)
+        state.players[0].bank = Math.max(balances.creditBalance, balances.realBalance)
       }
     } else {
       // Using Real Funds
-      if (balances.realBalance > 0) {
+      if (balances.realBalance >= MINIMUM_BET) {
         state.players[0].bank = balances.realBalance
-      } else if (balances.creditBalance > 0) {
-        // Real balance is 0, switch to Bonus Credits
+      } else if (balances.creditBalance >= MINIMUM_BET) {
+        // Real balance is insufficient, switch to Bonus Credits
         state.usedCredits = true
         localStorage.setItem('usedCredits', 'true')
         state.players[0].bank = balances.creditBalance
       } else {
-        // Both are 0
-        state.players[0].bank = 0
+        // Both are insufficient - use whichever is higher (or 0 if both are 0)
+        state.players[0].bank = Math.max(balances.creditBalance, balances.realBalance)
       }
     }
   }
@@ -388,7 +388,10 @@ export async function startRound() {
 
 /** If the player is bankrupt, end the game. */
 function checkForGameOver(): boolean {
-  if (state.players[0].bank < MINIMUM_BET) {
+  // Check if either balance (credit OR real) is sufficient to place a bet
+  // This allows the game to start even if the currently selected balance is insufficient
+  const hasSufficientBalance = balances.creditBalance >= MINIMUM_BET || balances.realBalance >= MINIMUM_BET
+  if (!hasSufficientBalance) {
     playSound(Sounds.GameOver)
     state.isGameOver = true
     return true

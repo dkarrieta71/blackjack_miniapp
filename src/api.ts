@@ -107,10 +107,9 @@ export interface XPRedemptionResponse {
 export interface BonusCreditsRedemptionResponse {
   success: boolean;
   bonusCreditsRedeemed: number;
-  bonusCreditsAwarded?: number;
-  realBalanceAdded?: number;
+  realBalanceAdded: number;
   newBonusCredits: number;
-  newRealBalance?: number;
+  newRealBalance: number;
 }
 
 /**

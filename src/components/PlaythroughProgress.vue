@@ -105,8 +105,7 @@ async function handleRedeem() {
     const result = await redeemBonusCredits(telegramId, initData)
 
     playSound(Sounds.Win)
-    const bonusAwarded = result.bonusCreditsAwarded ?? result.bonusCreditsRedeemed
-    successMessage.value = `Successfully redeemed $${result.bonusCreditsRedeemed.toFixed(2)} for $${bonusAwarded.toFixed(2)} bonus credits!`
+    successMessage.value = `Successfully redeemed $${result.bonusCreditsRedeemed.toFixed(2)} for $${result.realBalanceAdded.toFixed(2)} real balance!`
 
     // Fetch updated user info to get all updated balances (real, bonus, bonus credit balance)
     try {
@@ -120,6 +119,7 @@ async function handleRedeem() {
         // Fallback: use the result from redemption response
         const { balances, updatePlayerBank } = await import('@/store')
         balances.creditBalance = result.newBonusCredits
+        balances.realBalance = result.newRealBalance
         updatePlayerBank()
       }
     } catch (error) {
@@ -127,6 +127,7 @@ async function handleRedeem() {
       // Fallback: use the result from redemption response
       const { balances, updatePlayerBank } = await import('@/store')
       balances.creditBalance = result.newBonusCredits
+      balances.realBalance = result.newRealBalance
       updatePlayerBank()
     }
 

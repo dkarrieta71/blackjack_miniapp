@@ -12,7 +12,7 @@
       <input
         v-model.number="xpAmount"
         type="number"
-        :min="50"
+        :min="25"
         :max="xpInfo.redeemableXP"
         :step="50"
         placeholder="Enter XP amount (min 50)"
@@ -29,18 +29,18 @@
         {{ isRedeeming ? 'Redeeming...' : 'Redeem' }}
       </button>
     </div>
-    <div class="preview" v-if="xpAmount >= 50 && canRedeem">
+    <div class="preview" v-if="xpAmount >= 25 && canRedeem">
       <div class="preview-label">You will receive:</div>
       <div class="preview-amount">${{ bonusCreditsPreview.toFixed(2) }}</div>
     </div>
-    <div class="validation-message" v-if="xpAmount > 0 && xpAmount < 50">
-      Minimum redemption is 50 XP
+    <div class="validation-message" v-if="xpAmount > 0 && xpAmount < 25">
+      Minimum redemption is 25 XP
     </div>
     <div class="validation-message" v-if="xpInfo && xpAmount > xpInfo.redeemableXP">
       You only have {{ xpInfo.redeemableXP }} XP available
     </div>
-    <div class="validation-message" v-if="xpAmount >= 50 && xpAmount <= (xpInfo?.redeemableXP || 0) && xpAmount % 50 !== 0">
-      Amount must be a multiple of 50 XP
+    <div class="validation-message" v-if="xpAmount >= 25 && xpAmount <= (xpInfo?.redeemableXP || 0) && xpAmount % 25 !== 0">
+      Amount must be a multiple of 25 XP
     </div>
     <div class="error-message" v-if="errorMessage">
       {{ errorMessage }}
@@ -72,23 +72,23 @@ const errorMessage = ref<string>('')
 const successMessage = ref<string>('')
 
 const bonusCreditsPreview = computed(() => {
-  if (xpAmount.value < 50) return 0
-  return xpAmount.value / 50
+  if (xpAmount.value < 25) return 0
+  return xpAmount.value * 0.2
 })
 
 const canRedeem = computed(() => {
   if (!props.xpInfo) return false
-  if (xpAmount.value < 50) return false
+  if (xpAmount.value < 25) return false
   if (xpAmount.value > props.xpInfo.redeemableXP) return false
-  // Round to nearest 50 for validation
-  const rounded = Math.round(xpAmount.value / 50) * 50
-  if (rounded !== xpAmount.value) return false // Must be multiple of 50
+  // Round to nearest 25 for validation
+  const rounded = Math.round(xpAmount.value / 25) * 25
+  if (rounded !== xpAmount.value) return false // Must be multiple of 25
   return true
 })
 
-// Auto-round input to nearest 50
-function roundToNearest50(value: number): number {
-  return Math.round(value / 50) * 50
+// Auto-round input to nearest 25
+function roundToNearest25(value: number): number {
+  return Math.round(value / 25) * 25
 }
 
 function handleInputChange() {
@@ -97,9 +97,9 @@ function handleInputChange() {
 }
 
 function handleInputBlur() {
-  if (xpAmount.value && xpAmount.value >= 50) {
-    const rounded = roundToNearest50(xpAmount.value)
-    if (rounded >= 50 && rounded <= (props.xpInfo?.redeemableXP || 0)) {
+  if (xpAmount.value && xpAmount.value >= 25) {
+    const rounded = roundToNearest25(xpAmount.value)
+    if (rounded >= 25 && rounded <= (props.xpInfo?.redeemableXP || 0)) {
       xpAmount.value = rounded
     }
   }

@@ -307,7 +307,7 @@ export async function getXPInfo(telegramId: number, initData?: string): Promise<
 /**
  * Redeem XP for bonus credits
  * @param telegramId - Telegram user ID
- * @param xpAmount - Amount of XP to redeem (minimum 50)
+ * @param xpAmount - Amount of XP to redeem (minimum 25)
  * @param initData - Telegram Web App init data for authentication (optional)
  * @returns Redemption details
  */

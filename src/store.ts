@@ -1085,7 +1085,7 @@ export function refreshXPInfo(result: 'win' | 'lose' | 'push', usedCredits: bool
     setTimeout(() => {
       //chipState.showAfterXP = false
       // Reset chips to 0 for new round - player must set them manually
-      resetChips()
+      // resetChips()
     }, 1500) // Show chips for 1.5 seconds
   }, 2500)
 

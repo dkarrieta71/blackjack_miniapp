@@ -68,9 +68,11 @@ export const CHIP_DENOMINATIONS = [1, 5, 10, 25, 50, 100, 500, 1000] as const
 export const chipState = reactive<{
   chips: Record<number, number> // denomination -> count
   showAfterXP: boolean // Show chips after XP notification finishes
+  isSystemReset: boolean // True while chips are being reset by the game
 }>({
   chips: {},
   showAfterXP: true,
+  isSystemReset: false,
 })
 
 // Initialize chip state
@@ -129,8 +131,12 @@ export function removeChip(denomination: number) {
  * Reset all chips
  */
 export function resetChips() {
+  chipState.isSystemReset = true
   CHIP_DENOMINATIONS.forEach(denom => {
     chipState.chips[denom] = 0
+  })
+  nextTick(() => {
+    chipState.isSystemReset = false
   })
 }
 

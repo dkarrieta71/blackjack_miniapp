@@ -39,7 +39,7 @@ watch(() => currentHand.value.bet, (newBet) => {
 
 // Watch chip changes and update bet amount
 watch(() => chipState.chips, () => {
-  if (!updatingFromChips.value && !isResetting.value) {
+  if (!updatingFromChips.value && !isResetting.value && !chipState.isSystemReset) {
     const chipAmount = chipsToAmount(chipState.chips)
     if (chipAmount !== betAmount.value) {
       betAmount.value = Math.min(chipAmount, maxBet.value)

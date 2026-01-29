@@ -23,7 +23,10 @@ onMounted(() => {
 watch(() => currentHand.value.bet, (newBet) => {
   if (newBet === 0) {
     isResetting.value = true
-    betAmount.value = Math.min(lastBetAmount.value, maxBet.value)
+    const rememberedBet = Math.min(lastBetAmount.value, maxBet.value)
+    betAmount.value = rememberedBet >= MINIMUM_BET
+      ? rememberedBet
+      : Math.min(MINIMUM_BET, maxBet.value)
     // Don't reset chips here - playRound() handles that
     // Chips will be reset to 0; bet amount is remembered in the input
     nextTick(() => {

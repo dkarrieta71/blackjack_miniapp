@@ -52,6 +52,13 @@ export interface GameResult {
   newBalance: number;    // Player's balance after the game
 }
 
+export interface GameResultResponse {
+  success: boolean;
+  message?: string;
+  newBalance: number;
+  balanceType: 'real' | 'bonus';
+}
+
 export interface MatchBet {
   action: string;        // e.g., "hit", "stand", "double", "split", "surrender"
   handValue: number;     // The hand value at the time of this action
@@ -177,6 +184,7 @@ export async function updateBalanceOnBet(
     const response = await fetch(`${API_BASE_URL}/api/game/update-balance-on-bet`, {
       method: 'POST',
       headers,
+      keepalive: true,
       body: JSON.stringify({
         telegramId,
         betAmount,
@@ -205,7 +213,7 @@ export async function recordGameResult(
   gameResult: GameResult,
   usedCredits: boolean,
   initData?: string
-): Promise<void> {
+): Promise<GameResultResponse | null> {
   try {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -218,6 +226,7 @@ export async function recordGameResult(
     const response = await fetch(`${API_BASE_URL}/api/game/result`, {
       method: 'POST',
       headers,
+      keepalive: true,
       body: JSON.stringify({
         telegramId,
         useRealFunds: !usedCredits,
@@ -228,9 +237,13 @@ export async function recordGameResult(
     if (!response.ok) {
       throw new Error(`Failed to record game result: ${response.statusText}`)
     }
+    const payload = await response.json()
+    const data = payload?.data ?? payload
+    return data as GameResultResponse
   } catch (error) {
     console.error('Error recording game result:', error)
     // Don't throw - allow game to continue even if API call fails
+    return null
   }
 }
 
@@ -255,6 +268,7 @@ export async function syncMatch(
     const response = await fetch(`${API_BASE_URL}/api/match/sync`, {
       method: 'POST',
       headers,
+      keepalive: true,
       body: JSON.stringify(matchData),
     })
 

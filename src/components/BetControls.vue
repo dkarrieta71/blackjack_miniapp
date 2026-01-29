@@ -4,6 +4,7 @@ import { state, placeBet, startRound, chipState, chipsToAmount, setChipsFromAmou
 import { MINIMUM_BET, MAXIMUM_BET } from '@/store'
 
 const betAmount = ref(0)
+const lastBetAmount = ref(0)
 const player = computed(() => state.players[0])
 const currentHand = computed(() => player.value.hands[0])
 const maxBet = computed(() => Math.min(player.value.bank, MAXIMUM_BET))
@@ -18,13 +19,13 @@ onMounted(() => {
   // Chips and bet amount start at 0, player must set them manually
 })
 
-// Reset bet amount when a new round starts
+// Remember bet amount when a new round starts
 watch(() => currentHand.value.bet, (newBet) => {
   if (newBet === 0) {
     isResetting.value = true
-    betAmount.value = 0
+    betAmount.value = Math.min(lastBetAmount.value, maxBet.value)
     // Don't reset chips here - playRound() handles that
-    // Chips will be reset to 0, player must set them manually
+    // Chips will be reset to 0; bet amount is remembered in the input
     nextTick(() => {
       setTimeout(() => {
         isResetting.value = false
@@ -85,10 +86,15 @@ function doubleBet() {
   setBetAmount(betAmount.value * 2)
 }
 
+function clearBet() {
+  setBetAmount(0)
+}
+
 async function placeBetHandler() {
   if (state.isDealing || currentHand.value.bet > 0) return
   if (betAmount.value < MINIMUM_BET || betAmount.value > maxBet.value) return
 
+  lastBetAmount.value = betAmount.value
   await placeBet(player.value, currentHand.value, betAmount.value)
   await startRound()
 }
@@ -121,6 +127,14 @@ async function placeBetHandler() {
             :disabled="state.isDealing || currentHand.bet > 0 || betAmount * 2 > maxBet"
           >
             2x
+          </button>
+          <button
+            class="multiplier-btn clear-btn"
+            @click="clearBet"
+            :disabled="state.isDealing || currentHand.bet > 0 || betAmount <= 0"
+            aria-label="Clear bet"
+          >
+            X
           </button>
         </div>
       </div>
@@ -215,6 +229,15 @@ async function placeBetHandler() {
 .multiplier-btn:not(:disabled):hover {
   background: #ffed4e;
   transform: translateY(-0.1rem);
+}
+
+.clear-btn {
+  background: #d63c3c;
+  color: var(--color-white);
+}
+
+.clear-btn:not(:disabled):hover {
+  background: #b72f2f;
 }
 
 .bet-button {

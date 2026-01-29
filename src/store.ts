@@ -875,9 +875,19 @@ async function collectWinnings() {
         totalPayout: totalPayout,
         newBalance: player.bank,
       }
-      recordGameResult(telegramId, gameResult, state.usedCredits, initData).catch(err => {
+      try {
+        const result = await recordGameResult(telegramId, gameResult, state.usedCredits, initData)
+        if (result && typeof result.newBalance === 'number') {
+          if (result.balanceType === 'real') {
+            balances.realBalance = result.newBalance
+          } else {
+            balances.creditBalance = result.newBalance
+          }
+          updatePlayerBank()
+        }
+      } catch (err) {
         console.error('Failed to record game result:', err)
-      })
+      }
 
       // Sync match data to backend
       // Determine overall match result

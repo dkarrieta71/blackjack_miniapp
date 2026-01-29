@@ -358,9 +358,9 @@ export async function playRound() {
   state.matchBets = [] // Reset match bets for new round
   // Don't reset chips here if XP notification is showing - chips will be reset after showing them post-XP
   // If no XP notification, reset chips immediately to 0
-  if (!xpState.showXPNotification) {
-    resetChips() // Reset chips for new round (to 0)
-  }
+  // if (!xpState.showXPNotification) {
+  //   resetChips() // Reset chips for new round (to 0)
+  // }
   // If XP notification is showing, chips will be preserved and shown after XP, then reset in refreshXPInfo
   // Wait for user to place bet via BetControls component
 }

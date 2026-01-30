@@ -27,7 +27,8 @@ const props = defineProps<{
 const isMaxLevel = computed(() => !props.xpInfo?.nextLevel)
 const requiredXPLabel = computed(() => {
   if (!props.xpInfo) return ''
-  return isMaxLevel.value ? 'MAX' : props.xpInfo.nextLevel.expRequired
+  if (!props.xpInfo.nextLevel) return 'MAX'
+  return props.xpInfo.nextLevel.expRequired
 })
 const progressPercentage = computed(() => {
   if (!props.xpInfo) return 0

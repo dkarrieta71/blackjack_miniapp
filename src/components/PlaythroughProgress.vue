@@ -29,6 +29,9 @@
         </span>
         <span class="percentage-text">{{ Math.round(props.xpInfo?.playthroughPercentage ?? 0) }}%</span>
       </div>
+      <div class="current-batch" v-if="(props.xpInfo?.currentBatchCredits ?? 0) > 0">
+        Current batch: ${{ props.xpInfo?.currentBatchCredits.toFixed(2) ?? '0.00' }}
+      </div>
       <div class="redeemable-section" v-if="(props.xpInfo?.redeemableBonusCredits ?? 0) > 0 || successMessage || errorMessage">
         <div class="redeemable-notice" v-if="(props.xpInfo?.redeemableBonusCredits ?? 0) > 0">
           ✓ ${{ props.xpInfo?.redeemableBonusCredits.toFixed(2) ?? '0.00' }} available to redeem
@@ -241,6 +244,14 @@ async function handleRedeem() {
   opacity: 1;
   font-variation-settings: 'wght' 600;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+.current-batch {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1.2rem;
+  text-align: center;
+  font-variation-settings: 'wght' 500;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
 }
 
 .redeemable-section {

@@ -91,6 +91,7 @@ export interface XPInfo {
   playthroughRequired: number;
   playthroughPercentage: number;
   isPlaythroughComplete: boolean;
+  currentBatchCredits: number;
   currentLevel: XPLevel;
   nextLevel: XPLevel | null;
   xpUntilNextLevel: number;

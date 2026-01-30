@@ -2,7 +2,7 @@
   <div class="xp-progress-container" v-if="xpInfo">
     <div class="xp-header">
       <div class="xp-values">
-        <span class="current-xp">{{ xpInfo.currentLevel.expCurrent }}</span>
+        <span class="current-xp">{{ currentXPLabel }}</span>
         <span class="separator">/</span>
         <span class="required-xp">{{ requiredXPLabel }}</span>
       </div>
@@ -11,7 +11,7 @@
       <div class="progress-bar" :style="{ width: `${progressPercentage}%` }"></div>
     </div>
     <div class="xp-until-next" v-if="xpInfo.xpUntilNextLevel > 0 && xpInfo.nextLevel">
-      {{ xpInfo.xpUntilNextLevel }} XP until {{ xpInfo.nextLevel.tier }} {{ xpInfo.nextLevel.rank }}
+      {{ xpUntilNextLabel }} XP until {{ xpInfo.nextLevel.tier }} {{ xpInfo.nextLevel.rank }}
     </div>
   </div>
 </template>
@@ -25,10 +25,18 @@ const props = defineProps<{
 }>()
 
 const isMaxLevel = computed(() => !props.xpInfo?.nextLevel)
+const currentXPLabel = computed(() => {
+  if (!props.xpInfo) return ''
+  return props.xpInfo.currentLevel.expCurrent.toFixed(2)
+})
 const requiredXPLabel = computed(() => {
   if (!props.xpInfo) return ''
   if (!props.xpInfo.nextLevel) return 'MAX'
-  return props.xpInfo.nextLevel.expRequired
+  return props.xpInfo.nextLevel.expRequired.toFixed(2)
+})
+const xpUntilNextLabel = computed(() => {
+  if (!props.xpInfo) return ''
+  return props.xpInfo.xpUntilNextLevel.toFixed(2)
 })
 const progressPercentage = computed(() => {
   if (!props.xpInfo) return 0

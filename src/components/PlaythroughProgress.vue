@@ -2,7 +2,7 @@
   <div class="playthrough-container">
     <div v-if="shouldShow">
       <div class="playthrough-header">
-        <div class="bonus-credits-label">Current Batch Bonus Credit</div>
+        <div class="bonus-credits-label">Bonus Credits Balance</div>
         <div class="bonus-credits-amount">
           ${{ props.xpInfo ? props.xpInfo.bonusCreditsBalance.toFixed(2) : '0.00' }}
         </div>

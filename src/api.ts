@@ -92,7 +92,7 @@ export interface XPInfo {
   playthroughPercentage: number;
   isPlaythroughComplete: boolean;
   currentLevel: XPLevel;
-  nextLevel: XPLevel;
+  nextLevel: XPLevel | null;
   xpUntilNextLevel: number;
   progressPercentage: number;
   playerRank: string;    // Formatted string like "Bronze 1"

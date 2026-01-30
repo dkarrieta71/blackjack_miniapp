@@ -4,24 +4,35 @@
       <div class="xp-values">
         <span class="current-xp">{{ xpInfo.currentLevel.expCurrent }}</span>
         <span class="separator">/</span>
-        <span class="required-xp">{{ xpInfo.nextLevel.expRequired }}</span>
+        <span class="required-xp">{{ requiredXPLabel }}</span>
       </div>
     </div>
     <div class="progress-bar-wrapper">
-      <div class="progress-bar" :style="{ width: `${xpInfo.progressPercentage}%` }"></div>
+      <div class="progress-bar" :style="{ width: `${progressPercentage}%` }"></div>
     </div>
-    <div class="xp-until-next" v-if="xpInfo.xpUntilNextLevel > 0">
+    <div class="xp-until-next" v-if="xpInfo.xpUntilNextLevel > 0 && xpInfo.nextLevel">
       {{ xpInfo.xpUntilNextLevel }} XP until {{ xpInfo.nextLevel.tier }} {{ xpInfo.nextLevel.rank }}
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { XPInfo } from '@/api'
 
-defineProps<{
+const props = defineProps<{
   xpInfo: XPInfo | null
 }>()
+
+const isMaxLevel = computed(() => !props.xpInfo?.nextLevel)
+const requiredXPLabel = computed(() => {
+  if (!props.xpInfo) return ''
+  return isMaxLevel.value ? 'MAX' : props.xpInfo.nextLevel.expRequired
+})
+const progressPercentage = computed(() => {
+  if (!props.xpInfo) return 0
+  return isMaxLevel.value ? 100 : props.xpInfo.progressPercentage
+})
 </script>
 
 <style scoped>
